@@ -35,25 +35,30 @@ type Transform = forall b. Maybe (Parser b -> Parser b)
 parse :: forall a. Parser a -> Input -> ParseResult a
 parse (P x) = x.parse
 
-data ParseResult a = Result Input a | Error ParseError
+data ParseResult a
+  = Result Input a
+  | Error ParseError
 
-data ParseError = UnexpectedEof | ExpectedEof Input | UnexpectedChar Char | UnexpectedString String | NoMatch String | ErrorAt String
+data ParseError
+  = UnexpectedEof
+  | ExpectedEof Input
+  | UnexpectedChar Char
+  | UnexpectedString String
+  | NoMatch String
+  | ErrorAt String
 
 derive instance Eq ParseError
 derive instance Ord ParseError
 
 instance (Show a) => Show (ParseResult a) where
-  show (Result i a) = "Pending: " <> " >" <> i <> "< "
-    <> "\n\nResult: \n"
-    <> show a
+  show (Result i a) =
+    "Pending: " <> " >" <> i <> "< " <> "\n\nResult: \n" <> show a
   show (Error err) = show err
 
 instance Show ParseError where
   show (UnexpectedEof) = "Unexpected end of stream"
-  show (ExpectedEof i) = "Expected end of stream, but got "
-    <> ">"
-    <> i
-    <> "<"
+  show (ExpectedEof i) =
+    "Expected end of stream, but got " <> ">" <> i <> "<"
   show (UnexpectedChar c) = "Unexpected char: " <> "[" <> show c <> "]"
   show (UnexpectedString s) = "Unexpected string: " <> "[" <> s <> "]"
   show (NoMatch s) = "Did not match condition: " <> s
@@ -68,11 +73,15 @@ instance Functor Parser where
     applyTransformError t e $ mkParser (map f <<< p)
 
 instance Apply Parser where
-  apply f (P { parse: p, transform: (t :: Transform), errors: e }) =
-    applyTransformError t e $ mkParser
+  apply
+    (P { parse: p, transform: (t :: Transform), errors: e })
+    (P { parse: p', transform: (t' :: Transform), errors: e' }) =
+    applyTransformsErrors [ t, t' ] [ e, e' ] $ mkParser
       ( \x -> case p x of
-          Result i a -> parse ((_ $ a) <$> f) i
           Error pe -> Error pe
+          Result i f -> case p' i of
+            Error pe -> Error pe
+            Result i' a -> Result i' (f a)
       )
 
 instance Applicative Parser where

@@ -25,12 +25,12 @@ unsignedInt = withErrorN (-1) "Unsigned Int" $ unsafeRead
 
 posInt :: Parser Int
 posInt = withErrorN (-1) "Positive Int" $ unsafeRead
-  <$> ((|?) plus ->>- (|+) digit)
+  <$> ((|?) plus *> (||+) digit)
 
 negInt :: Parser Int
 negInt = withErrorN (-1) "Negative Int" $ unsafeRead
   <$> dash
-  ->>- digit
+  ->>- (|+) digit
 
 int :: Parser Int
 int = withErrorN (-1) "Int" $ negInt <|> posInt

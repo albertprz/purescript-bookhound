@@ -41,7 +41,7 @@ module Bookhound.ParserCombinators
 import FatPrelude
 
 import Bookhound.Parser (Parser, allOf, anyOf, char, check, except, isMatch, withError)
-
+import Bookhound.Utils.UnsafeRead (unsafeFromJust)
 import Data.List as List
 import Data.Unfoldable as Unfoldable
 
@@ -77,7 +77,7 @@ noneOf xs = allOf $ isNot <$> xs
 satisfies :: forall a. (a -> Boolean) -> Parser a -> Parser a
 satisfies cond p = check "satisfies" cond p
 
-alt :: forall a146. Parser a146 -> Parser a146 -> Parser a146
+alt :: forall a. Parser a -> Parser a -> Parser a
 alt p1 p2 = anyOf [ p1, p2 ]
 
 -- Times combinators
@@ -129,8 +129,8 @@ sepBy
   -> Parser a
   -> Parser b
   -> Parser (Array b)
-sepBy freq1 freq2 sep p = (<>) <$> (Unfoldable.fromMaybe <$> freq1 p)
-  <*> freq2 (sep *> p)
+sepBy freq1 freq2 sep p =
+  (<>) <$> (Unfoldable.fromMaybe <$> freq1 p) <*> freq2 (sep *> p)
 
 anySepBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
 anySepBy = sepBy (|?) (|*)
@@ -147,9 +147,8 @@ sepByOps sep p = do
   y <- (|+) ((/\) <$> sep <*> p)
   pure $ ((fst <$> y) /\ cons x (snd <$> y))
 
--- sepByOp :: forall a b. Parser a -> Parser b -> Parser (a /\ Array b)
-sepByOp :: forall t382 b384. Parser t382 -> Parser b384 -> Parser (Tuple (Maybe t382) (Array b384))
-sepByOp sep p = lmap head <$> sepByOps sep p
+sepByOp :: forall a b. Parser a -> Parser b -> Parser (a /\ Array b)
+sepByOp sep p = lmap (unsafeFromJust <<< head) <$> sepByOps sep p
 
 parseAppend
   :: forall a b

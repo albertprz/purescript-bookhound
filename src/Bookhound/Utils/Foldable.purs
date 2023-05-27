@@ -4,10 +4,11 @@ import Prelude
 
 import Bookhound.Utils.String (indent)
 import Data.Array (fromFoldable) as Array
-import Data.Array (tail)
-import Data.Foldable (class Foldable, and, intercalate, null)
+import Data.Array.Partial (tail) as Partial
+import Data.Foldable (class Foldable, intercalate, null)
 import Data.Foldable as Foldable
 import Data.Maybe (Maybe, isJust)
+import Partial.Unsafe (unsafePartial)
 
 hasNone :: forall a t. Foldable t => t a -> Boolean
 hasNone = null
@@ -16,7 +17,8 @@ hasSome :: forall a t. Foldable t => t a -> Boolean
 hasSome = not <<< hasNone
 
 hasMultiple :: forall a t. Foldable t => t a -> Boolean
-hasMultiple xs = and [ hasSome arr, hasSome $ tail arr ]
+hasMultiple xs =
+  hasSome arr && hasSome (unsafePartial $ Partial.tail arr)
   where
   arr = Array.fromFoldable xs
 
