@@ -1,8 +1,9 @@
 module Bookhound.Parser
   ( Parser
-  , ParseResult
+  , ParseResult(..)
   , ParseError(..)
   , Input
+  , parse
   , runParser
   , errorParser
   , andThen
@@ -32,12 +33,11 @@ newtype Parser a = P
 
 type Transform = forall b. Maybe (Parser b -> Parser b)
 
-parse :: forall a. Parser a -> Input -> ParseResult a
-parse (P x) = x.parse
-
 data ParseResult a
   = Result Input a
   | Error ParseError
+
+derive instance Eq a => Eq (ParseResult a)
 
 data ParseError
   = UnexpectedEof
@@ -94,6 +94,9 @@ instance Bind Parser where
           Result i a -> parse (f a) i
           Error pe -> Error pe
       )
+
+parse :: forall a. Parser a -> Input -> ParseResult a
+parse (P x) = x.parse
 
 runParser :: forall a. Parser a -> Input -> Either (Array ParseError) a
 runParser (p@(P { errors: e })) i =
@@ -152,7 +155,8 @@ anyOfHelper
   (P { parse: p, transform: (t :: Transform), errors: e } : rest)
   t'
   e' =
-  applyTransformsErrors [ t, t' ] [ e, e' ] $ mkParser
+  applyTransformsErrors [ t, t' ] [ e, e' ] $
+  mkParser
     ( \x -> case p x of
         Error _ -> parse (anyOfHelper rest t e) x
         result -> result

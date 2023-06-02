@@ -22,28 +22,33 @@ module FatPrelude
   , module Char
   , module String
   , module CodeUnits
+  , module CodePoints
+  , module Newtype
+  , module Unicode
   , module PSCISupport
   ) where
 
 import Prelude
 
 import Bookhound.Utils.Applicative (extract) as ApplicativeUtils
+import Bookhound.Utils.Array (class Range, range, (..)) as ArrayUtils
 import Bookhound.Utils.Foldable (findJust, hasMultiple, hasNone, hasSome, stringify) as FoldableUtils
 import Bookhound.Utils.Map (showMap) as MapUtils
 import Bookhound.Utils.String (class ToString, indent, lines, toString) as StringUtils
-import Bookhound.Utils.Array (class Range, range, (..)) as ArrayUtils
 import Bookhound.Utils.UnsafeRead (class UnsafeRead, unsafeRead) as UnsafeReadUtils
-
 import Data.Array hiding (range, all, any, elem, notElem, find, findMap, foldM, intercalate, length, scanl, scanr, fold, foldMap, foldl, foldr, null, (..), (:)) as Array
 import Data.Bifunctor (class Bifunctor, bimap, lmap, rmap) as Bifunctor
 import Data.Char (fromCharCode, toCharCode) as Char
+import Data.CodePoint.Unicode (isLower, isUpper) as Unicode
 import Data.Either (Either(..), blush, choose, either, fromLeft, fromLeft', fromRight, fromRight', hush, isLeft, isRight, note, note') as Either
 import Data.Foldable (class Foldable, all, and, any, elem, find, findMap, fold, foldM, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, for_, indexl, indexr, intercalate, length, lookup, maximum, maximumBy, minimum, minimumBy, notElem, null, or, product, sequence_, sum, surround, surroundMap, traverse_) as Foldable
 import Data.Function (compose, const, flip, identity, on, (#), ($), (<<<), (>>>)) as Function
 import Data.List (List(..), (:)) as List
 import Data.Map (Map) as Map
 import Data.Maybe (Maybe(..), fromJust, fromMaybe, fromMaybe', isJust, isNothing, maybe, maybe', optional) as Maybe
+import Data.Newtype (class Newtype, unwrap) as Newtype
 import Data.Set (Set) as Set
+import Data.String.CodePoints (CodePoint, codePointFromChar) as CodePoints
 import Data.String.CodeUnits (fromCharArray, toCharArray, charAt, toChar) as CodeUnits
 import Data.String.Common hiding (null) as String
 import Data.Traversable (class Traversable, Accum, mapAccumL, mapAccumR, scanl, scanr, sequence, sequenceDefault, sequence_, traverse, traverseDefault, traverse_) as Traversable

@@ -8,6 +8,7 @@
   , "integers"
   , "lists"
   , "maybe"
+  , "newtype"
   , "numbers"
   , "ordered-collections"
   , "partial"
@@ -19,4 +20,6 @@
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs" ]
+, license = "LGPL-2.1"
+, repository = "https://github.com/albertprz/purescript-bookhound"
 }
