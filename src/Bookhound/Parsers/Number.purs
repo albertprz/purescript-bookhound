@@ -49,7 +49,8 @@ intLike = parser <|> int
 
 double :: Parser Number
 double = withErrorN (-1) "Double" $ unsafeRead
-  <$> int
+  <$> (|?) dash
+  ->>- posInt
   ->>- (|?) decimals
   ->>- (|?) expn
   where

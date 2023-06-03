@@ -1,15 +1,10 @@
 module Bookhound.ParserCombinatorsSpec where
 
-import Bookhound.ParserCombinators
 import TestPrelude
 
-import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, allOf, anyOf, char, check, errorParser, exactly, except, isMatch, parse, runParser, withErrorN, withTransform)
-import Control.Monad.Gen (chooseInt)
-import Data.Newtype (wrap)
-import Data.Maybe as Maybe
+import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, anyOf, char, parse)
+import Bookhound.ParserCombinators (anySepBy, anyTimes, is, maybeTimes, maybeWithin, maybeWithinBoth, multipleSepBy, multipleTimes, someSepBy, someTimes, times, within, withinBoth, (->>-), (|*), (|+), (|?))
 import Data.String as String
-import Test.QuickCheck (class Arbitrary, arbitrary, (===))
-import Test.Spec (Spec, describe)
 
 spec :: Spec Unit
 spec = describe "Bookhound.ParserCombinators" $ do
@@ -37,7 +32,7 @@ spec = describe "Bookhound.ParserCombinators" $ do
     $
       \x -> parse (anyTimes char) x
         ===
-          parseTimes char (0 .. String.length x) x
+          parseTimes char (0 .. (String.length x + 10)) x
 
   describe "someTimes"
     $ prop "applies a parser at least once"
@@ -45,7 +40,7 @@ spec = describe "Bookhound.ParserCombinators" $ do
       \x -> parse (someTimes char) x
         ===
           replaceError "someTimes"
-            (parseTimes char (1 .. max 1 (String.length x)) x)
+            (parseTimes char (1 .. max 1 (String.length x + 10)) x)
 
   describe "multipleTimes"
     $ prop "applies a parser at least twice"
@@ -53,7 +48,7 @@ spec = describe "Bookhound.ParserCombinators" $ do
       \x -> parse (multipleTimes char) x
         ===
           replaceError "multipleTimes"
-            (parseTimes char (2 .. max 2 (String.length x)) x)
+            (parseTimes char (2 .. max 2 (String.length x + 10)) x)
 
   describe "withinBoth"
     $ prop "applies a parser surrounded by 2 parsers"
@@ -131,9 +126,3 @@ replaceError err (Error (NoMatch _)) = Error $ NoMatch err
 replaceError err (Error _) = Error $ NoMatch err
 replaceError _ result = result
 
-newtype SmallInt = SmallInt Int
-
-derive instance Newtype SmallInt _
-
-instance Arbitrary SmallInt where
-  arbitrary = wrap <$> chooseInt (-5000) (5000)

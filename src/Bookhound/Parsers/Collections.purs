@@ -15,10 +15,13 @@ collOf start end sep elemParser = start *> elemsParser <* end
   elemsParser = anySepBy sep $ maybeWithin spacing elemParser
 
 listOf :: forall a. Parser a -> Parser (Array a)
-listOf = withErrorN (-1) "List" <<< collOf openSquare closeSquare comma
+listOf = withErrorN (-1) "List"
+  <<< collOf openSquare closeSquare comma
 
 tupleOf :: forall a. Parser a -> Parser (Array a)
-tupleOf = withErrorN (-1) "Tuple" <<< satisfies ((_ >= 2) <<< length) <<< collOf openParens closeParens comma
+tupleOf = withErrorN (-1) "Tuple"
+  <<< satisfies ((_ >= 2) <<< length)
+  <<< collOf openParens closeParens comma
 
 mapOf :: forall a b c. Ord b => Parser a -> Parser b -> Parser c -> Parser (Map b c)
 mapOf sep p1 p2 = withErrorN (-1) "Map" $ Map.fromFoldable <$> collOf openCurly closeCurly comma mapEntry

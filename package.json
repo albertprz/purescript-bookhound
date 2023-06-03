@@ -7,7 +7,7 @@
   },
   "scripts": {
     "build": "purs-tidy format-in-place ./src/ && purs-tidy format-in-place ./test/ && spago build",
-    "build-ci": "spago build",
+    "build-ci": "spago -x test.dhall build",
     "test": "spago -x test.dhall test"
   }
 }

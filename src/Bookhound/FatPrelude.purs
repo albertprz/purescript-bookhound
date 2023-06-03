@@ -53,7 +53,7 @@ import Data.String.CodeUnits (fromCharArray, toCharArray, charAt, toChar) as Cod
 import Data.String.Common hiding (null) as String
 import Data.Traversable (class Traversable, Accum, mapAccumL, mapAccumR, scanl, scanr, sequence, sequenceDefault, sequence_, traverse, traverseDefault, traverse_) as Traversable
 import Data.Tuple (Tuple(..), curry, fst, snd, swap, uncurry) as Tuple
-import Data.Tuple.Nested (type (/\), Tuple1, Tuple2, Tuple3, Tuple4, Tuple5, curry1, curry10, curry2, curry3, curry4, curry5, get1, get10, get2, get3, get4, get5, over1, over10, over2, over3, over4, over5, tuple1, tuple10, tuple2, tuple3, tuple4, tuple5, uncurry1, uncurry10, uncurry2, uncurry3, uncurry4, uncurry5, (/\)) as Tuple.Nested
+import Data.Tuple.Nested (type (/\), Tuple1, Tuple2, Tuple3, Tuple4, Tuple5, curry2, curry3, curry4, curry5, get2, get3, get4, get5, over2, over3, over4, over5, tuple2, tuple3, tuple4, tuple5, uncurry2, uncurry3, uncurry4, uncurry5, (/\)) as Tuple.Nested
 import Data.Unit (Unit, unit) as Unit
 import PSCI.Support (class Eval) as PSCISupport
 import Prim hiding (Row) as Prim
