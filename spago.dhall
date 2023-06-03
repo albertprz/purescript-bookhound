@@ -21,6 +21,6 @@
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs" ]
-, license = "LGPL-2.1"
+, license = "LGPL-2.1-only"
 , repository = "https://github.com/albertprz/purescript-bookhound"
 }
