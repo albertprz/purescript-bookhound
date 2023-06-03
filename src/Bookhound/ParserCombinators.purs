@@ -25,6 +25,7 @@ module Bookhound.ParserCombinators
   , alt
   , parseAppend
   , withErrorFlipped
+  , timesFlipped
   , (<|>)
   , (<?>)
   , (<#>)
@@ -55,11 +56,16 @@ instance IsMatch Char where
   isNot = isMatch (/=) char
   inverse = except char
 
+else instance IsMatch (Array Char) where
+  is = traverse is
+  isNot = traverse isNot
+  inverse = except ((|*) char)
+
 else instance IsMatch String where
   is =
-    (fromCharArray <$> _) <<< traverse (isMatch (==) char) <<< toCharArray
+    (fromCharArray <$> _) <<< is <<< toCharArray
   isNot =
-    (fromCharArray <$> _) <<< traverse (isMatch (/=) char) <<< toCharArray
+    (fromCharArray <$> _) <<< is <<< toCharArray
   inverse =
     (fromCharArray <$> _) <<< except ((|*) char) <<< (toCharArray <$> _)
 
@@ -81,17 +87,18 @@ alt :: forall a. Parser a -> Parser a -> Parser a
 alt p1 p2 = anyOf [ p1, p2 ]
 
 -- Times combinators
-times :: forall a. Parser a -> Int -> Parser (Array a)
-times p n = sequence $ p <$ (1 .. n)
+times :: forall a. Int -> Parser a -> Parser (Array a)
+times n p
+  | n < 1 = sequence $ p <$ []
+  | otherwise = sequence $ p <$ (1 .. n)
 
 maybeTimes :: forall a. Parser a -> Parser (Maybe a)
-maybeTimes = (head <$> _) <<< check "maybeTimes" (not <<< hasMultiple) <<< anyTimes
+maybeTimes p = Just <$> p <|> pure Nothing
 
 anyTimes :: forall a. Parser a -> Parser (Array a)
 anyTimes = (List.toUnfoldable <$> _) <<< helper
   where
-  helper parser = (parser >>= (\x -> (x : _) <$> helper parser))
-    <|> pure mempty
+  helper p = (p >>= \x -> (x : _) <$> helper p) <|> pure mempty
 
 someTimes :: forall a. Parser a -> Parser (Array a)
 someTimes = check "someTimes" hasSome <<< anyTimes
@@ -162,10 +169,13 @@ parseAppend p1 p2 = (<>) <$> (toString <$> p1) <*> (toString <$> p2)
 withErrorFlipped :: forall t31. Parser t31 -> String -> Parser t31
 withErrorFlipped = flip withError
 
+timesFlipped :: forall a. Parser a -> Int -> Parser (Array a)
+timesFlipped = flip times
+
 -- Parser Binary Operators
 infixl 3 alt as <|>
 
-infixl 6 times as <#>
+infixl 6 timesFlipped as <#>
 
 infixl 6 withErrorFlipped as <?>
 

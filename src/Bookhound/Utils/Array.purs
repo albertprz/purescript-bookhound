@@ -5,6 +5,7 @@ import Prelude
 import Data.Array (mapMaybe)
 import Data.Array as Array
 import Data.Char (fromCharCode, toCharCode)
+import Data.Maybe (Maybe(..))
 
 infixr 8 range as ..
 
@@ -17,3 +18,7 @@ instance Range Char where
 
 instance Range Int where
   range = Array.range
+
+maybeToArray :: forall a. Maybe a -> Array a
+maybeToArray (Just x) = [ x ]
+maybeToArray Nothing = []

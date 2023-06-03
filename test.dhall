@@ -9,7 +9,7 @@ in      conf
               , "spec-quickcheck"
               , "aff"
               , "quickcheck"
+              , "gen"
               , "effect"
-              , "unicode"
               ]
         }

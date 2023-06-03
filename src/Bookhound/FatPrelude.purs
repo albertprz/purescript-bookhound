@@ -31,7 +31,7 @@ module FatPrelude
 import Prelude
 
 import Bookhound.Utils.Applicative (extract) as ApplicativeUtils
-import Bookhound.Utils.Array (class Range, range, (..)) as ArrayUtils
+import Bookhound.Utils.Array (class Range, range, (..), maybeToArray) as ArrayUtils
 import Bookhound.Utils.Foldable (findJust, hasMultiple, hasNone, hasSome, stringify) as FoldableUtils
 import Bookhound.Utils.Map (showMap) as MapUtils
 import Bookhound.Utils.String (class ToString, indent, lines, toString) as StringUtils

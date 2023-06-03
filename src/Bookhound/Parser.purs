@@ -156,11 +156,11 @@ anyOfHelper
   t'
   e' =
   applyTransformsErrors [ t, t' ] [ e, e' ] $
-  mkParser
-    ( \x -> case p x of
-        Error _ -> parse (anyOfHelper rest t e) x
-        result -> result
-    )
+    mkParser
+      ( \x -> case p x of
+          Error _ -> parse (anyOfHelper rest t e) x
+          result -> result
+      )
 
 allOfHelper
   :: forall a
