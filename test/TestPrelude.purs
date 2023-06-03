@@ -8,9 +8,9 @@ module TestPrelude
   , prop
   , pack
   , unpack
-  , PositiveInt
-  , NegativeInt
-  , SmallInt
+  , PositiveInt(..)
+  , NegativeInt(..)
+  , SmallInt(..)
 
   ) where
 

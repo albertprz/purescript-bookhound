@@ -6,7 +6,7 @@ import Bookhound.Parser (runParser)
 import Bookhound.Parsers.Number (int, negInt, posInt)
 
 spec :: Spec Unit
-spec = do
+spec = describe "Bookhound.Parsers.Number" $ do
 
   describe "posInt"
     $ prop "parses a positive Int"

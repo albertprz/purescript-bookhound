@@ -11,7 +11,7 @@ import Data.CodePoint.Unicode (isAlpha, isAscii)
 import Data.Map as Map
 
 spec :: Spec Unit
-spec = do
+spec = describe "Bookhound.Parsers.Collections" $ do
 
   describe "listOf"
     $ prop "parses a list provided the element parser"
