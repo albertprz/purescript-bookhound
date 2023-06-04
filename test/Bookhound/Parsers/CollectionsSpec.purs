@@ -7,7 +7,6 @@ import Bookhound.ParserCombinators (is)
 import Bookhound.Parsers.Collections (listOf, mapOf)
 import Bookhound.Parsers.Char (alpha)
 
-import Data.CodePoint.Unicode (isAlpha, isAscii)
 import Data.Map as Map
 
 spec :: Spec Unit

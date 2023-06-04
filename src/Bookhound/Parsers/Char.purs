@@ -1,6 +1,6 @@
 module Bookhound.Parsers.Char where
 
-import FatPrelude
+import Bookhound.FatPrelude
 
 import Bookhound.Parser (Parser)
 import Bookhound.Parser as Parser

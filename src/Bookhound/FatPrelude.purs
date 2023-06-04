@@ -1,4 +1,4 @@
-module FatPrelude
+module Bookhound.FatPrelude
   ( module Prelude
   , module MapUtils
   , module StringUtils
@@ -39,7 +39,7 @@ import Bookhound.Utils.UnsafeRead (class UnsafeRead, unsafeRead) as UnsafeReadUt
 import Data.Array hiding (range, all, any, elem, notElem, find, findMap, foldM, intercalate, length, scanl, scanr, fold, foldMap, foldl, foldr, null, (..), (:)) as Array
 import Data.Bifunctor (class Bifunctor, bimap, lmap, rmap) as Bifunctor
 import Data.Char (fromCharCode, toCharCode) as Char
-import Data.CodePoint.Unicode (isLower, isUpper) as Unicode
+import Data.CodePoint.Unicode (caseFoldSimple, isAlpha, isAlphaNum, isAscii, isAsciiLower, isAsciiUpper, isControl, isDecDigit, isDigit, isHexDigit, isLatin1, isLetter, isLower, isMark, isNumber, isOctDigit, isPrint, isPunctuation, isSeparator, isSpace, isSymbol, isUpper, toLowerSimple, toTitleSimple, toUpperSimple) as Unicode
 import Data.Either (Either(..), blush, choose, either, fromLeft, fromLeft', fromRight, fromRight', hush, isLeft, isRight, note, note') as Either
 import Data.Foldable (class Foldable, all, and, any, elem, find, findMap, fold, foldM, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, for_, indexl, indexr, intercalate, length, lookup, maximum, maximumBy, minimum, minimumBy, notElem, null, or, product, sequence_, sum, surround, surroundMap, traverse_) as Foldable
 import Data.Function (compose, const, flip, identity, on, (#), ($), (<<<), (>>>)) as Function
@@ -56,4 +56,3 @@ import Data.Tuple (Tuple(..), curry, fst, snd, swap, uncurry) as Tuple
 import Data.Tuple.Nested (type (/\), Tuple1, Tuple2, Tuple3, Tuple4, Tuple5, curry2, curry3, curry4, curry5, get2, get3, get4, get5, over2, over3, over4, over5, tuple2, tuple3, tuple4, tuple5, uncurry2, uncurry3, uncurry4, uncurry5, (/\)) as Tuple.Nested
 import Data.Unit (Unit, unit) as Unit
 import PSCI.Support (class Eval) as PSCISupport
-import Prim hiding (Row) as Prim

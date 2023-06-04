@@ -1,5 +1,5 @@
 module TestPrelude
-  ( module FatPrelude
+  ( module Bookhound.FatPrelude
   , module Test.QuickCheck
   , module Test.Spec
   , module Test.Spec.QuickCheck
@@ -14,7 +14,7 @@ module TestPrelude
 
   ) where
 
-import FatPrelude
+import Bookhound.FatPrelude
 
 import Control.Monad.Gen (class MonadGen, Size, chooseBool, chooseFloat, chooseInt, elements, filtered, frequency, oneOf, resize, sized, suchThat, unfoldable)
 import Data.List (toUnfoldable) as List

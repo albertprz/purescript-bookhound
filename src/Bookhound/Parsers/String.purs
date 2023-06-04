@@ -1,6 +1,6 @@
 module Bookhound.Parsers.String where
 
-import FatPrelude
+import Bookhound.FatPrelude
 
 import Bookhound.Parser (Parser)
 import Bookhound.Parsers.Char (alpha, alphaNum, char, closeAngle, closeCurly, closeParens, closeSquare, digit, doubleQuote, letter, lower, newLine, openAngle, openCurly, openParens, openSquare, quote, space, spaceOrTab, tab, upper, whiteSpace)

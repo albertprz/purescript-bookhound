@@ -39,7 +39,7 @@ module Bookhound.ParserCombinators
   , (||++)
   ) where
 
-import FatPrelude
+import Bookhound.FatPrelude
 
 import Bookhound.Parser (Parser, allOf, anyOf, char, check, except, isMatch, withError)
 import Bookhound.Utils.UnsafeRead (unsafeFromJust)

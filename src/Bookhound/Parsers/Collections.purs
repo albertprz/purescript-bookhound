@@ -1,6 +1,6 @@
 module Bookhound.Parsers.Collections (collOf, listOf, tupleOf, mapOf) where
 
-import FatPrelude
+import Bookhound.FatPrelude
 
 import Bookhound.Parser (Parser, withErrorN)
 import Bookhound.ParserCombinators (anySepBy, maybeWithin, satisfies)

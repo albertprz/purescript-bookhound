@@ -1,6 +1,6 @@
 module Bookhound.Parsers.Number (int, double, posInt, negInt, unsignedInt, hexInt, octInt, intLike) where
 
-import FatPrelude
+import Bookhound.FatPrelude
 
 import Bookhound.Parser (ParseError(..), Parser, errorParser, withErrorN)
 import Bookhound.ParserCombinators (is, oneOf, (->>-), (<|>), (|+), (|?), (||+))

@@ -19,7 +19,7 @@ module Bookhound.Parser
   , except
   ) where
 
-import FatPrelude
+import Bookhound.FatPrelude
 
 import Data.Set as Set
 
