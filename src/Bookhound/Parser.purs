@@ -21,6 +21,8 @@ module Bookhound.Parser
 
 import Bookhound.FatPrelude
 
+import Control.Lazy (class Lazy, defer)
+import Data.Lazy as Lazy
 import Data.Set as Set
 
 type Input = String
@@ -94,6 +96,11 @@ instance Bind Parser where
           Result i a -> parse (f a) i
           Error pe -> Error pe
       )
+
+instance Lazy (Parser a) where
+  defer f = mkParser \x -> parse (Lazy.force lazy) x
+    where
+    lazy = Lazy.defer f
 
 parse :: forall a. Parser a -> Input -> ParseResult a
 parse (P x) = x.parse

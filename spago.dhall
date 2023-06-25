@@ -6,6 +6,7 @@
   , "either"
   , "foldable-traversable"
   , "integers"
+  , "lazy"
   , "lists"
   , "maybe"
   , "newtype"
