@@ -165,8 +165,10 @@ except
 satisfy :: forall a. (a -> Boolean) -> Parser a -> Parser a
 satisfy cond ma = do
   c2 <- ma
-  guard $ cond c2
-  pure c2
+  if cond c2 then
+    pure c2
+  else
+    empty
 
 withError :: forall a. String -> Parser a -> Parser a
 withError = withErrorN 0
