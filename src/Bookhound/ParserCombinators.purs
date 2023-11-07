@@ -5,16 +5,18 @@ module Bookhound.ParserCombinators
   , inverse
   , oneOf
   , noneOf
-  , satisfies
+  , isMatch
+  , satisfy
   , times
-  , maybeTimes
-  , anyTimes
-  , someTimes
-  , multipleTimes
-  , anyTimesChar
-  , someTimesChar
-  , multipleTimesChar
+  , some
+  , many
+  , multiple
+  , manyChar
+  , someChar
+  , multipleChar
   , within
+  , applyCons
+  , applyTuple
   , maybeWithin
   , withinBoth
   , maybeWithinBoth
@@ -22,13 +24,15 @@ module Bookhound.ParserCombinators
   , someSepBy
   , multipleSepBy
   , sepByOp
-  , alt
+  , sepByOps
   , parseAppend
   , withErrorFlipped
   , timesFlipped
-  , (<|>)
   , (<?>)
   , (<#>)
+  , (<&>)
+  , (<:>)
+  , (</\>)
   , (->>-)
   , (|?)
   , (|*)
@@ -41,8 +45,11 @@ module Bookhound.ParserCombinators
 
 import Bookhound.FatPrelude
 
-import Bookhound.Parser (Parser, allOf, anyOf, char, check, except, isMatch, withError)
+import Bookhound.Parser (Parser, allOf, anyOf, char, except, both, withError)
+import Bookhound.Utils.String (charTraverse)
 import Bookhound.Utils.UnsafeRead (unsafeFromJust)
+import Control.Apply (lift2)
+import Control.MonadPlus (class MonadPlus)
 import Data.List as List
 import Data.Unfoldable as Unfoldable
 
@@ -62,29 +69,40 @@ else instance IsMatch (Array Char) where
   inverse = except ((|*) char)
 
 else instance IsMatch String where
-  is =
-    (fromCharArray <$> _) <<< is <<< toCharArray
-  isNot =
-    (fromCharArray <$> _) <<< is <<< toCharArray
-  inverse =
-    (fromCharArray <$> _) <<< except ((|*) char) <<< (toCharArray <$> _)
+  is = charTraverse is
+  isNot = charTraverse isNot
+  inverse = except ((||*) char)
 
 else instance (UnsafeRead a, Show a) => IsMatch a where
-  is n = unsafeRead <$> (is <<< show) n
-  isNot n = unsafeRead <$> (isNot <<< show) n
-  inverse p = unsafeRead <$> inverse (show <$> p)
+  is = map unsafeRead <<< is <<< show
+  isNot = map unsafeRead <<< isNot <<< show
+  inverse = map unsafeRead <<< inverse <<< map show
 
 oneOf :: forall a. IsMatch a => Array a -> Parser a
-oneOf xs = anyOf $ is <$> xs
+oneOf = anyOf <<< map is
 
 noneOf :: forall a. IsMatch a => Array a -> Parser a
-noneOf xs = allOf $ isNot <$> xs
+noneOf = allOf <<< map isNot
 
-satisfies :: forall a. (a -> Boolean) -> Parser a -> Parser a
-satisfies cond p = check "satisfies" cond p
+isMatch :: forall m a. MonadPlus m => (a -> a -> Boolean) -> m a -> a -> m a
+isMatch cond ma c1 = satisfy (cond c1) ma
 
-alt :: forall a. Parser a -> Parser a -> Parser a
-alt p1 p2 = anyOf [ p1, p2 ]
+satisfy :: forall m a. MonadPlus m => (a -> Boolean) -> m a -> m a
+satisfy cond ma = do
+  c2 <- ma
+  guard $ cond c2
+  pure c2
+
+many :: forall m a. MonadPlus m => m a -> m (Array a)
+many = map List.toUnfoldable <<< helper
+  where
+  helper p = (p >>= \x -> Cons x <$> helper p) <|> pure mempty
+
+some :: forall m a. MonadPlus m => m a -> m (Array a)
+some = satisfy hasSome <<< many
+
+multiple :: forall m a. MonadPlus m => m a -> m (Array a)
+multiple = satisfy hasMultiple <<< many
 
 -- Times combinators
 times :: forall a. Int -> Parser a -> Parser (Array a)
@@ -92,28 +110,14 @@ times n p
   | n < 1 = sequence $ p <$ []
   | otherwise = sequence $ p <$ (1 .. n)
 
-maybeTimes :: forall a. Parser a -> Parser (Maybe a)
-maybeTimes p = Just <$> p <|> pure Nothing
+manyChar :: Parser Char -> Parser String
+manyChar = map fromCharArray <<< many
 
-anyTimes :: forall a. Parser a -> Parser (Array a)
-anyTimes = (List.toUnfoldable <$> _) <<< helper
-  where
-  helper p = (p >>= \x -> (x : _) <$> helper p) <|> pure mempty
+someChar :: Parser Char -> Parser String
+someChar = map fromCharArray <<< some
 
-someTimes :: forall a. Parser a -> Parser (Array a)
-someTimes = check "someTimes" hasSome <<< anyTimes
-
-multipleTimes :: forall a. Parser a -> Parser (Array a)
-multipleTimes = check "multipleTimes" hasMultiple <<< anyTimes
-
-anyTimesChar :: Parser Char -> Parser String
-anyTimesChar = (map fromCharArray) <<< anyTimes
-
-someTimesChar :: Parser Char -> Parser String
-someTimesChar = (map fromCharArray) <<< someTimes
-
-multipleTimesChar :: Parser Char -> Parser String
-multipleTimesChar = (map fromCharArray) <<< multipleTimes
+multipleChar :: Parser Char -> Parser String
+multipleChar = map fromCharArray <<< multiple
 
 -- Within combinators
 within :: forall a b. Parser a -> Parser b -> Parser b
@@ -164,7 +168,13 @@ parseAppend
   => Parser a
   -> Parser b
   -> Parser String
-parseAppend p1 p2 = (<>) <$> (toString <$> p1) <*> (toString <$> p2)
+parseAppend p1 p2 = append <$> map toString p1 <*> map toString p2
+
+applyTuple :: forall f a b. Apply f => f a -> f b -> f (a /\ b)
+applyTuple = lift2 Tuple
+
+applyCons :: forall f a. Apply f => f a -> f (Array a) -> f (Array a)
+applyCons = lift2 cons
 
 withErrorFlipped :: forall t31. Parser t31 -> String -> Parser t31
 withErrorFlipped = flip withError
@@ -173,25 +183,29 @@ timesFlipped :: forall a. Parser a -> Int -> Parser (Array a)
 timesFlipped = flip times
 
 -- Parser Binary Operators
-infixl 3 alt as <|>
-
 infixl 6 timesFlipped as <#>
 
 infixl 6 withErrorFlipped as <?>
 
+infixl 6 both as <&>
+
+infixl 6 applyTuple as </\>
+
+infixl 6 applyCons as <:>
+
 infixl 6 parseAppend as ->>-
 
 -- Parser Frequency Unary Operators
-infix 0 maybeTimes as |?
+infix 0 optional as |?
 
-infix 0 anyTimes as |*
+infix 0 many as |*
 
-infix 0 someTimes as |+
+infix 0 some as |+
 
-infix 0 multipleTimes as |++
+infix 0 multiple as |++
 
-infix 0 anyTimesChar as ||*
+infix 0 manyChar as ||*
 
-infix 0 someTimesChar as ||+
+infix 0 someChar as ||+
 
-infix 0 multipleTimesChar as ||++
+infix 0 multipleChar as ||++

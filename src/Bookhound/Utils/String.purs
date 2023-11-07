@@ -6,7 +6,8 @@ import Data.Array (fold, replicate)
 import Data.Foldable (class Foldable, foldMap)
 import Data.List (intercalate)
 import Data.String (Pattern(..), split)
-import Data.String.CodeUnits (singleton)
+import Data.String.CodeUnits (fromCharArray, singleton, toCharArray)
+import Data.Traversable (traverse)
 
 class ToString a where
   toString :: a -> String
@@ -33,3 +34,15 @@ indent :: Int -> String -> String
 indent n str = intercalate "\n" $ indentLine <$> lines str
   where
   indentLine = ((fold $ replicate n " ") <> _)
+
+cons :: Char -> String -> String
+cons = append <<< singleton
+
+snoc :: String -> Char -> String
+snoc = flip cons
+
+charMap :: (Char -> Char) -> String -> String
+charMap f = fromCharArray <<< map f <<< toCharArray
+
+charTraverse :: forall m. Applicative m => (Char -> m Char) -> String -> m String
+charTraverse f = map fromCharArray <<< traverse f <<< toCharArray

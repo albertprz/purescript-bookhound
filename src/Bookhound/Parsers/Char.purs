@@ -2,12 +2,12 @@ module Bookhound.Parsers.Char where
 
 import Bookhound.FatPrelude
 
-import Bookhound.Parser (Parser)
-import Bookhound.Parser as Parser
-import Bookhound.ParserCombinators (is, oneOf, (<|>))
+import Bookhound.Parser (Parser, char)
+import Bookhound.ParserCombinators (is, oneOf)
+import Control.Alt ((<|>))
 
-char :: Parser Char
-char = Parser.char
+anyChar :: Parser Char
+anyChar = char
 
 digit :: Parser Char
 digit = oneOf ('0' .. '9')

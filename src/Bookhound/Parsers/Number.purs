@@ -2,10 +2,10 @@ module Bookhound.Parsers.Number (int, double, posInt, negInt, unsignedInt, hexIn
 
 import Bookhound.FatPrelude
 
-import Bookhound.Parser (ParseError(..), Parser, errorParser, withErrorN)
-import Bookhound.ParserCombinators (is, oneOf, (->>-), (<|>), (|+), (|?), (||+))
+import Bookhound.Parser (Parser, withErrorN)
+import Bookhound.ParserCombinators (is, oneOf, (->>-), (|+), (|?), (||+))
 import Bookhound.Parsers.Char (dash, digit, dot, plus)
-
+import Control.Alt ((<|>))
 import Data.String as String
 
 hexInt :: Parser Int
@@ -29,29 +29,26 @@ posInt = withErrorN (-1) "Positive Int" $ unsafeRead
 
 negInt :: Parser Int
 negInt = withErrorN (-1) "Negative Int" $ unsafeRead
-  <$> dash
-  ->>- (|+) digit
+  <$> (dash ->>- (||+) digit)
 
 int :: Parser Int
 int = withErrorN (-1) "Int" $ negInt <|> posInt
 
 intLike :: Parser Int
-intLike = parser <|> int
+intLike = withErrorN (-1) "Int Like" $ parser <|> int
   where
   parser = do
     n1 <- show <$> int
     n2 <- show <$> (dot *> unsignedInt)
     expNum <- oneOf [ 'e', 'E' ] *> int
-    if String.length n1 + String.length n2 <= expNum then
-      pure <<< unsafeRead $ n1 <> "." <> n2 <> "E" <> show expNum
-    else
-      errorParser $ NoMatch "Int Like"
+    guard (String.length n1 + String.length n2 <= expNum)
+    pure <<< unsafeRead $ n1 <> "." <> n2 <> "E" <> show expNum
 
 double :: Parser Number
 double = withErrorN (-1) "Double" $ unsafeRead
   <$> (|?) dash
   ->>- posInt
-  ->>- (|?) decimals
+  ->>- decimals
   ->>- (|?) expn
   where
   decimals = dot ->>- unsignedInt

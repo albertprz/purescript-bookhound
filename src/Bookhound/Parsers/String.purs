@@ -3,15 +3,14 @@ module Bookhound.Parsers.String where
 import Bookhound.FatPrelude
 
 import Bookhound.Parser (Parser)
-import Bookhound.Parsers.Char (alpha, alphaNum, char, closeAngle, closeCurly, closeParens, closeSquare, digit, doubleQuote, letter, lower, newLine, openAngle, openCurly, openParens, openSquare, quote, space, spaceOrTab, tab, upper, whiteSpace)
-
 import Bookhound.ParserCombinators (inverse, maybeWithin, maybeWithinBoth, within, withinBoth, (->>-), (|+), (|?), (||*), (||+))
+import Bookhound.Parsers.Char (alpha, alphaNum, anyChar, closeAngle, closeCurly, closeParens, closeSquare, digit, doubleQuote, letter, lower, newLine, openAngle, openCurly, openParens, openSquare, quote, space, spaceOrTab, tab, upper, whiteSpace)
 
-string :: Parser String
-string = (||*) char
+anyString :: Parser String
+anyString = (||*) anyChar
 
 word :: Parser String
-word = (||+) (inverse whiteSpace)
+word = (||+) $ inverse whiteSpace
 
 digits :: Parser String
 digits = (||+) digit

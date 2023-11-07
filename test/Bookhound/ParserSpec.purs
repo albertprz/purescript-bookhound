@@ -2,7 +2,9 @@ module Bookhound.ParserSpec where
 
 import TestPrelude hiding (length, toUpper)
 
-import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, allOf, anyOf, char, check, errorParser, exactly, except, isMatch, parse, runParser, withErrorN, withTransform)
+import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, allOf, anyOf, char, exactly, except, parse, runParser, withErrorN, withTransform)
+import Bookhound.ParserCombinators (isMatch, satisfy)
+import Control.Monad.Error.Class (throwError)
 import Data.Array (length)
 import Data.CodePoint.Unicode (toUpper)
 
@@ -74,8 +76,8 @@ spec = describe "Bookhound.Parser" $ do
           case unpack x of
             (ch : rest)
               | ch == y -> Result (pack rest) ch
-              | otherwise -> Error $ UnexpectedChar ch
-            Nil -> Error UnexpectedEof
+              | hasSome rest -> Error $ ExpectedEof $ pack rest
+            _ -> Error UnexpectedEof
 
     prop "works for /=" $
       \x y -> parse (isMatch (/=) char y) x
@@ -83,20 +85,19 @@ spec = describe "Bookhound.Parser" $ do
           case unpack x of
             (ch : rest)
               | ch /= y -> Result (pack rest) ch
-              | otherwise -> Error $ UnexpectedChar ch
-            Nil -> Error UnexpectedEof
+            _ -> Error UnexpectedEof
 
-  describe "check"
+  describe "satisfy"
     $ prop "performs a check on the parse result"
     $
-      \x -> parse (check "lower" isLower codePoint) x
+      \x -> parse (satisfy isLower codePoint) x
         ===
           case unpack x of
             (ch : rest)
               | isLower $ codePointFromChar ch -> Result (pack rest)
                   (codePointFromChar ch)
-              | otherwise -> Error $ NoMatch "lower"
-            Nil -> Error UnexpectedEof
+              | hasSome rest -> Error $ ExpectedEof $ pack rest
+            _ -> Error UnexpectedEof
 
   describe "except"
     $ describe "when the second parser fails"
@@ -106,7 +107,7 @@ spec = describe "Bookhound.Parser" $ do
         ===
           case unpack x of
             (ch : Nil) -> Result "" ch
-            (_ : _) -> Error $ NoMatch "except"
+            (_ : _) -> Error $ ExpectedEof x
             Nil -> Error UnexpectedEof
 
   describe "anyOf"
@@ -114,11 +115,11 @@ spec = describe "Bookhound.Parser" $ do
         \x ->
           parse
             ( anyOf
-                [ errorParser $ ErrorAt "firstError"
+                [ throwError $ ErrorAt "firstError"
                 , "firstSuccess" <$ char
                 , "secondSuccess" <$ char
-                , errorParser $ ErrorAt "secondError"
-                , errorParser $ ErrorAt "lastError"
+                , throwError $ ErrorAt "secondError"
+                , throwError $ ErrorAt "lastError"
                 ]
             )
             x
@@ -137,7 +138,7 @@ spec = describe "Bookhound.Parser" $ do
             ( allOf
                 [ "firstSuccess" <$ char
                 , "secondSuccess" <$ char
-                , errorParser $ ErrorAt "firstError"
+                , throwError $ ErrorAt "firstError"
                 ]
             )
             x
@@ -146,22 +147,22 @@ spec = describe "Bookhound.Parser" $ do
                 (_ : _) -> Error $ ErrorAt "firstError"
                 Nil -> Error UnexpectedEof
 
-  describe "when all parsers succeed"
-    $ prop "returns last parser success"
-    $
-      \x ->
-        parse
-          ( allOf
-              [ "firstSuccess" <$ char
-              , "secondSuccess" <$ char
-              , "thirdSuccess" <$ char
-              ]
-          )
-          x
-          ===
-            case unpack x of
-              (_ : rest) -> Result (pack rest) "thirdSuccess"
-              Nil -> Error UnexpectedEof
+    describe "when all parsers succeed"
+      $ prop "returns last parser success"
+      $
+        \x ->
+          parse
+            ( allOf
+                [ "firstSuccess" <$ char
+                , "secondSuccess" <$ char
+                , "thirdSuccess" <$ char
+                ]
+            )
+            x
+            ===
+              case unpack x of
+                (_ : rest) -> Result (pack rest) "thirdSuccess"
+                Nil -> Error UnexpectedEof
 
   describe "exactly"
     $ prop "returns an error when some chars remain after parsing"

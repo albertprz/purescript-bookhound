@@ -16,9 +16,11 @@
   , "prelude"
   , "psci-support"
   , "strings"
+  , "transformers"
   , "tuples"
   , "unfoldable"
   , "unicode"
+  , "unsafe-coerce"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs" ]
