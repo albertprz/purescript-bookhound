@@ -10,23 +10,26 @@ import Control.Alt ((<|>))
 anyChar :: Parser Char
 anyChar = Parser.anyChar
 
+satisfyChar :: (Char -> Boolean) -> Parser Char
+satisfyChar = flip satisfy anyChar
+
 digit :: Parser Char
-digit = satisfy (isDecDigit <<< codePointFromChar) anyChar
+digit = satisfyChar isDigit
 
 hexDigit :: Parser Char
-hexDigit = satisfy (isHexDigit <<< codePointFromChar) anyChar
+hexDigit = satisfyChar isHexDigit
 
 upper :: Parser Char
-upper = satisfy (isAsciiUpper <<< codePointFromChar) anyChar
+upper = satisfyChar isUpper
 
 lower :: Parser Char
-lower = satisfy (isAsciiLower <<< codePointFromChar) anyChar
+lower = satisfyChar isLower
 
 alpha :: Parser Char
-alpha = lower <|> upper
+alpha = satisfyChar isAlpha
 
 alphaNum :: Parser Char
-alphaNum = alpha <|> digit
+alphaNum = satisfyChar isAlphaNum
 
 space :: Parser Char
 space = is ' '

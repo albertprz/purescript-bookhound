@@ -18,18 +18,19 @@ import Bookhound.FatPrelude
 import Bookhound.Parser (Parser, satisfy)
 import Bookhound.Utils.UnsafeRead (unsafeFromJust)
 import Control.Apply (lift2)
-import Control.MonadPlus (class MonadPlus)
 import Data.List as List
 
-many :: forall m a. MonadPlus m => m a -> m (List a)
+-- Frequency combinators
+many :: forall a. Parser a -> Parser (List a)
 many p = (p >>= \x -> pure x <:> many p) <|> pure mempty
 
-some :: forall m a. MonadPlus m => m a -> m (List a)
+some :: forall a. Parser a -> Parser (List a)
 some = satisfy hasSome <<< many
 
-multiple :: forall m a. MonadPlus m => m a -> m (List a)
+multiple :: forall a. Parser a -> Parser (List a)
 multiple = satisfy hasMultiple <<< many
 
+-- Separated by combinators
 sepBy
   :: forall a b
    . (Parser b -> Parser (Maybe b))
@@ -64,6 +65,10 @@ sepByOp sep p = lmap (unsafeFromJust <<< List.head) <$> sepByOps sep p
 applyCons :: forall f a. Apply f => f a -> f (List a) -> f (List a)
 applyCons = lift2 Cons
 
+-- Apply Binary Operators
+infixl 6 applyCons as <:>
+
+-- Frequency Unary Operators
 infix 0 optional as |?
 
 infix 0 many as |*
@@ -71,5 +76,3 @@ infix 0 many as |*
 infix 0 some as |+
 
 infix 0 multiple as |++
-
-infixl 6 applyCons as <:>

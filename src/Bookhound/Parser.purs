@@ -162,7 +162,7 @@ except
       Result _ _ -> Error (ExpectedEof x)
       Error _ -> p x
 
-satisfy :: forall m a. MonadPlus m => (a -> Boolean) -> m a -> m a
+satisfy :: forall a. (a -> Boolean) -> Parser a -> Parser a
 satisfy cond ma = do
   c2 <- ma
   guard $ cond c2

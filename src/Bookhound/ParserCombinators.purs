@@ -47,8 +47,8 @@ import Bookhound.Parser (Parser, allOf, anyOf, both, anyChar, except, satisfy, w
 import Bookhound.ParserCombinators.List as List
 import Bookhound.Utils.String (charTraverse)
 import Control.Apply (lift2)
-import Control.MonadPlus (class MonadPlus)
 import Data.Array as Array
+import Data.String.CodeUnits as String
 
 class IsMatch a where
   is :: a -> Parser a
@@ -75,7 +75,7 @@ else instance (UnsafeRead a, Show a) => IsMatch a where
   isNot = map unsafeRead <<< isNot <<< show
   inverse = map unsafeRead <<< inverse <<< map show
 
-isMatch :: forall m a. MonadPlus m => (a -> a -> Boolean) -> m a -> a -> m a
+isMatch :: forall a. (a -> a -> Boolean) -> Parser a -> a -> Parser a
 isMatch cond ma c1 = satisfy (cond c1) ma
 
 oneOf :: forall a. IsMatch a => Array a -> Parser a
@@ -85,14 +85,17 @@ noneOf :: forall a. IsMatch a => Array a -> Parser a
 noneOf = allOf <<< map isNot
 
 -- Frequency combinators
-many :: forall m a. MonadPlus m => m a -> m (Array a)
+many :: forall a. Parser a -> Parser (Array a)
 many = map Array.fromFoldable <<< List.many
 
-some :: forall m a. MonadPlus m => m a -> m (Array a)
+some :: forall a. Parser a -> Parser (Array a)
 some = map Array.fromFoldable <<< List.some
 
-multiple :: forall m a. MonadPlus m => m a -> m (Array a)
+multiple :: forall a. Parser a -> Parser (Array a)
 multiple = map Array.fromFoldable <<< List.multiple
+
+optionalChar :: Parser Char -> Parser String
+optionalChar = map (maybe mempty String.singleton) <<< optional
 
 manyChar :: Parser Char -> Parser String
 manyChar = map fromCharArray <<< many
@@ -182,6 +185,9 @@ infix 0 many as |*
 infix 0 some as |+
 
 infix 0 multiple as |++
+
+-- Char Frequency Unary Operators
+infix 0 optionalChar as ||?
 
 infix 0 manyChar as ||*
 

@@ -7,6 +7,8 @@ import Bookhound.ParserCombinators (is)
 import Bookhound.Parsers.Collections (listOf, mapOf)
 import Bookhound.Parsers.Char (alpha)
 
+import Data.String.CodeUnits as String
+
 import Data.Map as Map
 
 spec :: Spec Unit
@@ -18,10 +20,10 @@ spec = describe "Bookhound.Parsers.Collections" $ do
         runParser (listOf alpha)
           ( "["
               <> intercalate ", "
-                (fromCharArray <<< pure <$> filter isAlpha' x)
+                (fromCharArray <<< pure <$> filter isAlpha x)
               <> "]"
           )
-          === Right (filter isAlpha' x)
+          === Right (filter isAlpha x)
 
   describe "mapOf"
     $ prop "parses a map provided the key and value parsers"
@@ -35,10 +37,7 @@ spec = describe "Bookhound.Parsers.Collections" $ do
 
 showMapEntry :: (Char /\ Char) -> String
 showMapEntry (x /\ y) =
-  fromCharArray (pure x) <> ": " <> fromCharArray (pure y)
+  String.singleton x <> ": " <> String.singleton y
 
 areAlpha' :: (Char /\ Char) -> Boolean
-areAlpha' (x /\ y) = isAlpha' x && isAlpha' y
-
-isAlpha' :: Char -> Boolean
-isAlpha' x = and $ [ isAlpha, isAscii ] <*> [ codePointFromChar x ]
+areAlpha' (x /\ y) = isAlpha x && isAlpha y

@@ -1,12 +1,10 @@
 module Bookhound.ParserSpec where
 
-import TestPrelude hiding (length, toUpper)
+import TestPrelude hiding (length)
 
-import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, allOf, anyOf, anyChar, exactly, except, parse, runParser, withErrorN, satisfy, withTransform)
+import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, allOf, anyChar, anyOf, exactly, except, parse, runParser, satisfy, withErrorN, withTransform)
 import Control.Monad.Error.Class (throwError)
-import Control.MonadPlus (class MonadPlus)
 import Data.Array (length)
-import Data.CodePoint.Unicode (toUpper)
 
 spec :: Spec Unit
 spec = describe "Bookhound.Parser" do
@@ -18,8 +16,8 @@ spec = describe "Bookhound.Parser" do
           === parse anyChar x
 
     prop "Composition"
-      $ \x -> parse ((all isLower <<< toUpper) <$> codePoint) x
-          === parse ((all isLower <$> _) <<< (toUpper <$> _) $ codePoint) x
+      $ \x -> parse ((const true <<< isUpper) <$> anyChar) x
+          === parse (map (const true) <<< map isUpper $ anyChar) x
 
   describe "Applicative laws" do
 
@@ -77,11 +75,10 @@ spec = describe "Bookhound.Parser" do
 
   describe "satisfy"
     $ prop "performs a check on the parse result"
-    $ \x -> parse (satisfy isLower codePoint) x
+    $ \x -> parse (satisfy isLower anyChar) x
         === case unpack x of
           (ch : rest)
-            | isLower $ codePointFromChar ch -> Result (pack rest)
-                (codePointFromChar ch)
+            | isLower ch -> Result (pack rest) ch
             | hasSome rest -> Error $ ExpectedEof $ pack rest
           _ -> Error UnexpectedEof
 
@@ -178,11 +175,8 @@ spec = describe "Bookhound.Parser" do
     $ \x -> parse (withTransform (\p -> anyChar *> p <* anyChar) anyChar) x
         === parse (anyChar *> anyChar <* anyChar) x
 
-isMatch :: forall m a. MonadPlus m => (a -> a -> Boolean) -> m a -> a -> m a
+isMatch :: forall a. (a -> a -> Boolean) -> Parser a -> a -> Parser a
 isMatch cond ma c1 = satisfy (cond c1) ma
-
-codePoint :: Parser CodePoint
-codePoint = codePointFromChar <$> anyChar
 
 toEither :: forall a. ParseResult a -> Either (Array ParseError) a
 toEither = case _ of

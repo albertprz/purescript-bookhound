@@ -2,6 +2,7 @@ module Bookhound.FatPrelude
   ( module Prelude
   , module MapUtils
   , module StringUtils
+  , module CharUtils
   , module FoldableUtils
   , module ApplicativeUtils
   , module ArrayUtils
@@ -25,7 +26,6 @@ module Bookhound.FatPrelude
   , module CodeUnits
   , module CodePoints
   , module Newtype
-  , module Unicode
   , module PSCISupport
   ) where
 
@@ -36,11 +36,11 @@ import Bookhound.Utils.Array (class Range, range, (..), maybeToArray) as ArrayUt
 import Bookhound.Utils.Foldable (findJust, hasMultiple, hasNone, hasSome, stringify) as FoldableUtils
 import Bookhound.Utils.Map (showMap) as MapUtils
 import Bookhound.Utils.String (class ToString, indent, lines, toString) as StringUtils
+import Bookhound.Utils.Char (isAlpha, isAlphaNum, isDigit, isHexDigit, isLower, isUpper) as CharUtils
 import Bookhound.Utils.UnsafeRead (class UnsafeRead, unsafeRead) as UnsafeReadUtils
 import Data.Array hiding (many, some, range, all, any, elem, notElem, find, findMap, foldM, intercalate, length, scanl, scanr, fold, foldMap, foldl, foldr, null, (..), (:)) as Array
 import Data.Bifunctor (class Bifunctor, bimap, lmap, rmap) as Bifunctor
 import Data.Char (fromCharCode, toCharCode) as Char
-import Data.CodePoint.Unicode (caseFoldSimple, isAlpha, isAlphaNum, isAscii, isAsciiLower, isAsciiUpper, isControl, isDecDigit, isDigit, isHexDigit, isLatin1, isLetter, isLower, isMark, isNumber, isOctDigit, isPrint, isPunctuation, isSeparator, isSpace, isSymbol, isUpper, toLowerSimple, toTitleSimple, toUpperSimple) as Unicode
 import Data.Either (Either(..), blush, choose, either, fromLeft, fromLeft', fromRight, fromRight', hush, isLeft, isRight, note, note') as Either
 import Data.Foldable (class Foldable, all, and, any, elem, find, findMap, fold, foldM, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, for_, indexl, indexr, intercalate, length, lookup, maximum, maximumBy, minimum, minimumBy, notElem, null, or, product, sequence_, sum, surround, surroundMap, traverse_) as Foldable
 import Data.Function (compose, const, flip, identity, on, (#), ($), (<<<), (>>>)) as Function
