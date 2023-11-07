@@ -14,33 +14,28 @@ spec = describe "Bookhound.Parsers.Collections" $ do
 
   describe "listOf"
     $ prop "parses a list provided the element parser"
-    $
-      \(x :: Array Char) ->
+    $ \(x :: Array Char) ->
         runParser (listOf alpha)
-
           ( "["
               <> intercalate ", "
                 (fromCharArray <<< pure <$> filter isAlpha' x)
               <> "]"
           )
-          ===
-            Right (filter isAlpha' x)
+          === Right (filter isAlpha' x)
 
   describe "mapOf"
     $ prop "parses a map provided the key and value parsers"
-    $
-      \(x :: Array (Char /\ Char)) ->
+    $ \(x :: Array (Char /\ Char)) ->
         runParser (mapOf (is ":") alpha alpha)
           ( "{"
               <> intercalate ", " (showMapEntry <$> filter areAlpha' x)
               <> "}"
           )
-          ===
-            Right (Map.fromFoldable $ filter areAlpha' x)
+          === Right (Map.fromFoldable $ filter areAlpha' x)
 
 showMapEntry :: (Char /\ Char) -> String
-showMapEntry (x /\ y) = fromCharArray (pure x) <> ": "
-  <> fromCharArray (pure y)
+showMapEntry (x /\ y) =
+  fromCharArray (pure x) <> ": " <> fromCharArray (pure y)
 
 areAlpha' :: (Char /\ Char) -> Boolean
 areAlpha' (x /\ y) = isAlpha' x && isAlpha' y

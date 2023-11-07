@@ -2,8 +2,8 @@ module Bookhound.Parsers.Collections (collOf, listOf, tupleOf, mapOf) where
 
 import Bookhound.FatPrelude
 
-import Bookhound.Parser (Parser, withErrorN)
-import Bookhound.ParserCombinators (anySepBy, maybeWithin, satisfy)
+import Bookhound.Parser (Parser, satisfy, withErrorN)
+import Bookhound.ParserCombinators (manySepBy, maybeWithin)
 import Bookhound.Parsers.Char (closeCurly, closeParens, closeSquare, comma, openCurly, openParens, openSquare)
 import Bookhound.Parsers.String (spacing)
 import Data.Map as Map
@@ -11,7 +11,7 @@ import Data.Map as Map
 collOf :: forall a b c d. Parser a -> Parser b -> Parser c -> Parser d -> Parser (Array d)
 collOf start end sep elemParser = start *> elemsParser <* end
   where
-  elemsParser = anySepBy sep $ maybeWithin spacing elemParser
+  elemsParser = manySepBy sep $ maybeWithin spacing elemParser
 
 listOf :: forall a. Parser a -> Parser (Array a)
 listOf = withErrorN (-1) "List"

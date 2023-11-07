@@ -10,25 +10,18 @@ spec = describe "Bookhound.Parsers.Number" $ do
 
   describe "posInt"
     $ prop "parses a positive Int"
-    $
-      \(x :: PositiveInt) ->
+    $ \(x :: PositiveInt) ->
         runParser posInt (show $ unwrap x)
-          ===
-            Right (unwrap x)
+          === Right (unwrap x)
 
   describe "negInt"
     $ prop "parses a negative Int"
-    $
-      \(x :: NegativeInt) ->
+    $ \(x :: NegativeInt) ->
         runParser negInt (show $ unwrap x)
-          ===
-            Right (unwrap x)
+          === Right (unwrap x)
 
   describe "int"
     $ prop "parses an Int"
-    $
-      \(x :: Int) ->
+    $ \(x :: Int) ->
         runParser int (show x)
-          ===
-            Right x
-
+          === Right x

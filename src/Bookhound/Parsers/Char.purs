@@ -2,27 +2,28 @@ module Bookhound.Parsers.Char where
 
 import Bookhound.FatPrelude
 
-import Bookhound.Parser (Parser, char)
-import Bookhound.ParserCombinators (is, oneOf)
+import Bookhound.Parser (Parser, satisfy)
+import Bookhound.Parser as Parser
+import Bookhound.ParserCombinators (is)
 import Control.Alt ((<|>))
 
 anyChar :: Parser Char
-anyChar = char
+anyChar = Parser.anyChar
 
 digit :: Parser Char
-digit = oneOf ('0' .. '9')
+digit = satisfy (isDecDigit <<< codePointFromChar) anyChar
+
+hexDigit :: Parser Char
+hexDigit = satisfy (isHexDigit <<< codePointFromChar) anyChar
 
 upper :: Parser Char
-upper = oneOf ('A' .. 'Z')
+upper = satisfy (isAsciiUpper <<< codePointFromChar) anyChar
 
 lower :: Parser Char
-lower = oneOf ('a' .. 'z')
-
-letter :: Parser Char
-letter = upper <|> lower
+lower = satisfy (isAsciiLower <<< codePointFromChar) anyChar
 
 alpha :: Parser Char
-alpha = letter
+alpha = lower <|> upper
 
 alphaNum :: Parser Char
 alphaNum = alpha <|> digit
@@ -33,14 +34,14 @@ space = is ' '
 tab :: Parser Char
 tab = is '\t'
 
+newLine :: Parser Char
+newLine = is '\n'
+
 spaceOrTab :: Parser Char
 spaceOrTab = space <|> tab
 
 whiteSpace :: Parser Char
-whiteSpace = space <|> tab <|> newLine
-
-newLine :: Parser Char
-newLine = is '\n'
+whiteSpace = spaceOrTab <|> newLine
 
 comma :: Parser Char
 comma = is ','

@@ -18,7 +18,6 @@
   , "strings"
   , "transformers"
   , "tuples"
-  , "unfoldable"
   , "unicode"
   , "unsafe-coerce"
   ]

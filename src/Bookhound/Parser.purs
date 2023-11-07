@@ -4,17 +4,19 @@ module Bookhound.Parser
   , ParseError(..)
   , Input
   , parse
+  , mkParser
   , runParser
   , andThen
   , exactly
   , both
   , anyOf
   , allOf
-  , char
+  , anyChar
+  , except
+  , satisfy
   , withTransform
   , withError
   , withErrorN
-  , except
   ) where
 
 import Bookhound.FatPrelude
@@ -100,8 +102,8 @@ instance Lazy (Parser a) where
     where
     lazy = Lazy.defer f
 
-char :: Parser Char
-char = mkParser
+anyChar :: Parser Char
+anyChar = mkParser
   $ maybe (Error UnexpectedEof) (\x -> Result x.tail x.head)
   <<< String.uncons
 
@@ -117,11 +119,8 @@ runParser (p@(P { errors: e })) i =
     Error pe -> Left $ filter hasPriorityError [ pe ]
       <> (snd <$> reverse (Set.toUnfoldable e))
       <> filter (not <<< hasPriorityError) [ pe ]
-
-hasPriorityError :: ParseError -> Boolean
-hasPriorityError (ErrorAt _) = true
-
-hasPriorityError _ = false
+  hasPriorityError (ErrorAt _) = true
+  hasPriorityError _ = false
 
 andThen :: forall a. Parser String -> Parser a -> Parser a
 andThen p1 (p2@(P { transform: (t :: Transform), errors: e })) =
@@ -162,6 +161,12 @@ except
     \x -> case p' x of
       Result _ _ -> Error (ExpectedEof x)
       Error _ -> p x
+
+satisfy :: forall m a. MonadPlus m => (a -> Boolean) -> m a -> m a
+satisfy cond ma = do
+  c2 <- ma
+  guard $ cond c2
+  pure c2
 
 withError :: forall a. String -> Parser a -> Parser a
 withError = withErrorN 0

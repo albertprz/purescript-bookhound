@@ -5,8 +5,6 @@ module Bookhound.ParserCombinators
   , inverse
   , oneOf
   , noneOf
-  , isMatch
-  , satisfy
   , times
   , some
   , many
@@ -20,7 +18,7 @@ module Bookhound.ParserCombinators
   , maybeWithin
   , withinBoth
   , maybeWithinBoth
-  , anySepBy
+  , manySepBy
   , someSepBy
   , multipleSepBy
   , sepByOp
@@ -45,13 +43,12 @@ module Bookhound.ParserCombinators
 
 import Bookhound.FatPrelude
 
-import Bookhound.Parser (Parser, allOf, anyOf, char, except, both, withError)
+import Bookhound.Parser (Parser, allOf, anyOf, both, anyChar, except, satisfy, withError)
+import Bookhound.ParserCombinators.List as List
 import Bookhound.Utils.String (charTraverse)
-import Bookhound.Utils.UnsafeRead (unsafeFromJust)
 import Control.Apply (lift2)
 import Control.MonadPlus (class MonadPlus)
-import Data.List as List
-import Data.Unfoldable as Unfoldable
+import Data.Array as Array
 
 class IsMatch a where
   is :: a -> Parser a
@@ -59,24 +56,27 @@ class IsMatch a where
   inverse :: Parser a -> Parser a
 
 instance IsMatch Char where
-  is = isMatch (==) char
-  isNot = isMatch (/=) char
-  inverse = except char
+  is = isMatch (==) anyChar
+  isNot = isMatch (/=) anyChar
+  inverse = except anyChar
 
 else instance IsMatch (Array Char) where
   is = traverse is
   isNot = traverse isNot
-  inverse = except ((|*) char)
+  inverse = except ((|*) anyChar)
 
 else instance IsMatch String where
   is = charTraverse is
   isNot = charTraverse isNot
-  inverse = except ((||*) char)
+  inverse = except ((||*) anyChar)
 
 else instance (UnsafeRead a, Show a) => IsMatch a where
   is = map unsafeRead <<< is <<< show
   isNot = map unsafeRead <<< isNot <<< show
   inverse = map unsafeRead <<< inverse <<< map show
+
+isMatch :: forall m a. MonadPlus m => (a -> a -> Boolean) -> m a -> a -> m a
+isMatch cond ma c1 = satisfy (cond c1) ma
 
 oneOf :: forall a. IsMatch a => Array a -> Parser a
 oneOf = anyOf <<< map is
@@ -84,31 +84,15 @@ oneOf = anyOf <<< map is
 noneOf :: forall a. IsMatch a => Array a -> Parser a
 noneOf = allOf <<< map isNot
 
-isMatch :: forall m a. MonadPlus m => (a -> a -> Boolean) -> m a -> a -> m a
-isMatch cond ma c1 = satisfy (cond c1) ma
-
-satisfy :: forall m a. MonadPlus m => (a -> Boolean) -> m a -> m a
-satisfy cond ma = do
-  c2 <- ma
-  guard $ cond c2
-  pure c2
-
+-- Frequency combinators
 many :: forall m a. MonadPlus m => m a -> m (Array a)
-many = map List.toUnfoldable <<< helper
-  where
-  helper p = (p >>= \x -> Cons x <$> helper p) <|> pure mempty
+many = map Array.fromFoldable <<< List.many
 
 some :: forall m a. MonadPlus m => m a -> m (Array a)
-some = satisfy hasSome <<< many
+some = map Array.fromFoldable <<< List.some
 
 multiple :: forall m a. MonadPlus m => m a -> m (Array a)
-multiple = satisfy hasMultiple <<< many
-
--- Times combinators
-times :: forall a. Int -> Parser a -> Parser (Array a)
-times n p
-  | n < 1 = sequence $ p <$ []
-  | otherwise = sequence $ p <$ (1 .. n)
+multiple = map Array.fromFoldable <<< List.multiple
 
 manyChar :: Parser Char -> Parser String
 manyChar = map fromCharArray <<< many
@@ -119,47 +103,41 @@ someChar = map fromCharArray <<< some
 multipleChar :: Parser Char -> Parser String
 multipleChar = map fromCharArray <<< multiple
 
+times :: forall a. Int -> Parser a -> Parser (Array a)
+times n p
+  | n < 1 = sequence $ p <$ []
+  | otherwise = sequence $ p <$ (1 .. n)
+
+-- Separated by combinators
+manySepBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
+manySepBy sep p = Array.fromFoldable <$> List.manySepBy sep p
+
+someSepBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
+someSepBy sep p = Array.fromFoldable <$> List.someSepBy sep p
+
+multipleSepBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
+multipleSepBy sep p = Array.fromFoldable <$> List.multipleSepBy sep p
+
+sepByOps :: forall a b. Parser a -> Parser b -> Parser (Array a /\ Array b)
+sepByOps sep p = bimap Array.fromFoldable Array.fromFoldable
+  <$> List.sepByOps sep p
+
+sepByOp :: forall a b. Parser a -> Parser b -> Parser (a /\ Array b)
+sepByOp sep p = rmap Array.fromFoldable
+  <$> List.sepByOp sep p
+
 -- Within combinators
-within :: forall a b. Parser a -> Parser b -> Parser b
-within p = extract p p
-
-maybeWithin :: forall a b. Parser a -> Parser b -> Parser b
-maybeWithin p = within ((|?) p)
-
 withinBoth :: forall a b c. Parser a -> Parser b -> Parser c -> Parser c
 withinBoth = extract
 
 maybeWithinBoth :: forall a b c. Parser a -> Parser b -> Parser c -> Parser c
-maybeWithinBoth p1 p2 = extract ((|?) p1) ((|?) p2)
+maybeWithinBoth p p' = withinBoth (optional p) (optional p')
 
--- Separated by combinators
-sepBy
-  :: forall a b
-   . (Parser b -> Parser (Maybe b))
-  -> (Parser b -> Parser (Array b))
-  -> Parser a
-  -> Parser b
-  -> Parser (Array b)
-sepBy freq1 freq2 sep p =
-  (<>) <$> (Unfoldable.fromMaybe <$> freq1 p) <*> freq2 (sep *> p)
+within :: forall a b. Parser a -> Parser b -> Parser b
+within p = withinBoth p p
 
-anySepBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
-anySepBy = sepBy (|?) (|*)
-
-someSepBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
-someSepBy = sepBy (map Just) (|*)
-
-multipleSepBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
-multipleSepBy = sepBy (map Just) (|+)
-
-sepByOps :: forall a b. Parser a -> Parser b -> Parser (Array a /\ Array b)
-sepByOps sep p = do
-  x <- p
-  y <- (|+) ((/\) <$> sep <*> p)
-  pure $ ((fst <$> y) /\ cons x (snd <$> y))
-
-sepByOp :: forall a b. Parser a -> Parser b -> Parser (a /\ Array b)
-sepByOp sep p = lmap (unsafeFromJust <<< head) <$> sepByOps sep p
+maybeWithin :: forall a b. Parser a -> Parser b -> Parser b
+maybeWithin = within <<< optional
 
 parseAppend
   :: forall a b
@@ -189,13 +167,14 @@ infixl 6 withErrorFlipped as <?>
 
 infixl 6 both as <&>
 
+infixl 6 parseAppend as ->>-
+
+-- Apply Binary Operators
 infixl 6 applyTuple as </\>
 
 infixl 6 applyCons as <:>
 
-infixl 6 parseAppend as ->>-
-
--- Parser Frequency Unary Operators
+-- Frequency Unary Operators
 infix 0 optional as |?
 
 infix 0 many as |*

@@ -4,7 +4,7 @@ import Bookhound.FatPrelude
 
 import Bookhound.Parser (Parser)
 import Bookhound.ParserCombinators (inverse, maybeWithin, maybeWithinBoth, within, withinBoth, (->>-), (|+), (|?), (||*), (||+))
-import Bookhound.Parsers.Char (alpha, alphaNum, anyChar, closeAngle, closeCurly, closeParens, closeSquare, digit, doubleQuote, letter, lower, newLine, openAngle, openCurly, openParens, openSquare, quote, space, spaceOrTab, tab, upper, whiteSpace)
+import Bookhound.Parsers.Char (alpha, alphaNum, anyChar, closeAngle, closeCurly, closeParens, closeSquare, digit, doubleQuote, lower, newLine, openAngle, openCurly, openParens, openSquare, quote, space, spaceOrTab, tab, upper, whiteSpace)
 
 anyString :: Parser String
 anyString = (||*) anyChar
@@ -20,9 +20,6 @@ uppers = (||+) upper
 
 lowers :: Parser String
 lowers = (||+) lower
-
-letters :: Parser String
-letters = (||+) letter
 
 alphas :: Parser String
 alphas = (||+) alpha

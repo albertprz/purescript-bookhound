@@ -2,8 +2,8 @@ module Bookhound.ParserCombinatorsSpec where
 
 import TestPrelude
 
-import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, anyOf, char, parse)
-import Bookhound.ParserCombinators (anySepBy, is, many, maybeWithin, maybeWithinBoth, multiple, multipleSepBy, some, someSepBy, times, within, withinBoth, (->>-), (|*), (|+), (|?))
+import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, anyOf, anyChar, parse)
+import Bookhound.ParserCombinators (manySepBy, is, many, maybeWithin, maybeWithinBoth, multiple, multipleSepBy, some, someSepBy, times, within, withinBoth, (->>-), (|*), (|+), (|?))
 import Data.String as String
 
 spec :: Spec Unit
@@ -11,8 +11,7 @@ spec = describe "Bookhound.ParserCombinators" $ do
 
   describe "times"
     $ prop "applies a parser n times sequentially"
-    $
-      \x (n :: SmallInt) -> parse (times (unwrap n) char) x
+    $ \x (n :: SmallInt) -> parse (times (unwrap n) anyChar) x
         ===
           if String.length x >= unwrap n then
             Result (String.drop (unwrap n) x)
@@ -22,90 +21,76 @@ spec = describe "Bookhound.ParserCombinators" $ do
 
   describe "optional"
     $ prop "applies a parser 1 or 0 times"
-    $
-      \x -> parse (optional char) x
-        === (head <$> parseTimes char [ 0, 1 ] x)
+    $ \x -> parse (optional anyChar) x
+        === (head <$> parseTimes anyChar [ 0, 1 ] x)
 
   describe "many"
     $ prop "applies a parser any number of times"
-    $
-      \x -> parse (many char) x
-        === parseTimes char (0 .. (String.length x + 10)) x
+    $ \x -> parse (many anyChar) x
+        === parseTimes anyChar (0 .. (String.length x + 10)) x
 
   describe "some"
     $ prop "applies a parser at least once"
-    $
-      \x -> parse (some char) x
-        === parseTimes char (1 .. max 1 (String.length x + 10)) x
+    $ \x -> parse (some anyChar) x
+        === parseTimes anyChar (1 .. max 1 (String.length x + 10)) x
 
   describe "multiple"
     $ prop "applies a parser at least twice"
-    $
-      \x -> parse (multiple char) x
-        === parseTimes char (2 .. max 2 (String.length x + 10)) x
+    $ \x -> parse (multiple anyChar) x
+        === parseTimes anyChar (2 .. max 2 (String.length x + 10)) x
 
   describe "withinBoth"
     $ prop "applies a parser surrounded by 2 parsers"
-    $
-      \x (y :: Char) (z :: Char) ->
-        parse (withinBoth (is y) (is z) char) x
-          === parse (is y *> char <* is z) x
+    $ \x (y :: Char) (z :: Char) ->
+        parse (withinBoth (is y) (is z) anyChar) x
+          === parse (is y *> anyChar <* is z) x
 
   describe "maybeWithinBoth"
     $ prop "applies a parser surrounded by 2 optional parsers"
-    $
-      \x (y :: Char) (z :: Char) ->
-        parse (maybeWithinBoth (is y) (is z) char) x
-          === parse (((|?) $ is y) *> char <* ((|?) $ is z)) x
+    $ \x (y :: Char) (z :: Char) ->
+        parse (maybeWithinBoth (is y) (is z) anyChar) x
+          === parse (((|?) $ is y) *> anyChar <* ((|?) $ is z)) x
 
   describe "within"
     $ prop "applies a parser surrounded by a parser"
-    $
-      \x (y :: Char) ->
-        parse (within (is y) char) x
-          === parse (is y *> char <* is y) x
+    $ \x (y :: Char) ->
+        parse (within (is y) anyChar) x
+          === parse (is y *> anyChar <* is y) x
 
   describe "maybeWithin"
     $ prop "applies a parser surrounded by a optional parsers"
-    $
-      \x (y :: Char) ->
-        parse (maybeWithin (is y) char) x
-          === parse (((|?) $ is y) *> char <* ((|?) $ is y)) x
+    $ \x (y :: Char) ->
+        parse (maybeWithin (is y) anyChar) x
+          === parse (((|?) $ is y) *> anyChar <* ((|?) $ is y)) x
 
-  describe "anySepBy"
+  describe "manySepBy"
     $ prop "applies a parser separated by a parser any number of times"
-    $
-      \x (y :: Char) ->
-        parse (anySepBy (is y) char) x
+    $ \x (y :: Char) ->
+        parse (manySepBy (is y) anyChar) x
           === parse
             ( append
-                <$> (map maybeToArray ((|?) char))
-                <*> ((|*) (is y *> char))
+                <$> (map maybeToArray ((|?) anyChar))
+                <*> ((|*) (is y *> anyChar))
             )
             x
 
   describe "someSepBy"
     $ prop "applies a parser separated by a parser at least once"
-    $
-      \x (y :: Char) ->
-        parse (someSepBy (is y) char) x
-          === parse (cons <$> char <*> ((|*) (is y *> char))) x
+    $ \x (y :: Char) ->
+        parse (someSepBy (is y) anyChar) x
+          === parse (cons <$> anyChar <*> ((|*) (is y *> anyChar))) x
 
   describe "multipleSepBy"
     $ prop "applies a parser separated by a parser at least twice"
-    $
-      \x (y :: Char) ->
-        parse (multipleSepBy (is y) char) x
-          ===
-            parse (cons <$> char <*> ((|+) (is y *> char))) x
+    $ \x (y :: Char) ->
+        parse (multipleSepBy (is y) anyChar) x
+          === parse (cons <$> anyChar <*> ((|+) (is y *> anyChar))) x
 
   describe "->>-"
     $ prop "concats results of 2 parsers that can be converted to Strings"
-    $
-      \x (y :: Char) (z :: Char) ->
+    $ \x (y :: Char) (z :: Char) ->
         parse (is y ->>- is z) x
-          ===
-            parse (fromCharArray <$> is [ y, z ]) x
+          === parse (fromCharArray <$> is [ y, z ]) x
 
 parseTimes :: forall a. Parser a -> Array Int -> String -> ParseResult (Array a)
 parseTimes p ns = parse $ anyOf (flip times p <$> reverse ns)
