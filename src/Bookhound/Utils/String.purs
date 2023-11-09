@@ -9,24 +9,6 @@ import Data.String (Pattern(..), split)
 import Data.String.CodeUnits (fromCharArray, singleton, toCharArray)
 import Data.Traversable (traverse)
 
-class ToString a where
-  toString :: a -> String
-
-instance ToString Char where
-  toString = singleton
-
-instance ToString String where
-  toString = identity
-
-instance ToString Int where
-  toString = show
-
-instance ToString Number where
-  toString = show
-
-instance (ToString a, Foldable m) => ToString (m a) where
-  toString = foldMap toString
-
 lines :: String -> Array String
 lines = split (Pattern "\n")
 
@@ -46,3 +28,21 @@ charMap f = fromCharArray <<< map f <<< toCharArray
 
 charTraverse :: forall m. Applicative m => (Char -> m Char) -> String -> m String
 charTraverse f = map fromCharArray <<< traverse f <<< toCharArray
+
+class ToString a where
+  toString :: a -> String
+
+instance ToString Char where
+  toString = singleton
+
+instance ToString String where
+  toString = identity
+
+instance ToString Int where
+  toString = show
+
+instance ToString Number where
+  toString = show
+
+instance (ToString a, Foldable m) => ToString (m a) where
+  toString = foldMap toString

@@ -1,12 +1,8 @@
 module Bookhound.FatPrelude
   ( module Prelude
-  , module MapUtils
   , module StringUtils
   , module CharUtils
-  , module FoldableUtils
-  , module ApplicativeUtils
   , module ArrayUtils
-  , module UnsafeReadUtils
   , module Foldable
   , module Traversable
   , module Bifunctor
@@ -31,18 +27,14 @@ module Bookhound.FatPrelude
 
 import Prelude
 
-import Bookhound.Utils.Applicative (extract) as ApplicativeUtils
-import Bookhound.Utils.Array (class Range, range, (..), maybeToArray) as ArrayUtils
-import Bookhound.Utils.Foldable (findJust, hasMultiple, hasNone, hasSome, stringify) as FoldableUtils
-import Bookhound.Utils.Map (showMap) as MapUtils
+import Bookhound.Utils.Array (class Range, range, (..)) as ArrayUtils
 import Bookhound.Utils.String (class ToString, indent, lines, toString) as StringUtils
 import Bookhound.Utils.Char (isAlpha, isAlphaNum, isDigit, isHexDigit, isLower, isUpper) as CharUtils
-import Bookhound.Utils.UnsafeRead (class UnsafeRead, unsafeRead) as UnsafeReadUtils
-import Data.Array hiding (many, some, range, all, any, elem, notElem, find, findMap, foldM, intercalate, length, scanl, scanr, fold, foldMap, foldl, foldr, null, (..), (:)) as Array
+import Data.Array hiding (many, some, range, all, any, elem, notElem, find, findMap, foldM, intercalate, scanl, scanr, fold, foldMap, foldl, foldr, null, (..), (:)) as Array
 import Data.Bifunctor (class Bifunctor, bimap, lmap, rmap) as Bifunctor
 import Data.Char (fromCharCode, toCharCode) as Char
 import Data.Either (Either(..), blush, choose, either, fromLeft, fromLeft', fromRight, fromRight', hush, isLeft, isRight, note, note') as Either
-import Data.Foldable (class Foldable, all, and, any, elem, find, findMap, fold, foldM, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, for_, indexl, indexr, intercalate, length, lookup, maximum, maximumBy, minimum, minimumBy, notElem, null, or, product, sequence_, sum, surround, surroundMap, traverse_) as Foldable
+import Data.Foldable (class Foldable, all, and, any, elem, find, findMap, fold, foldM, foldMap, foldMapDefaultL, foldMapDefaultR, foldl, foldlDefault, foldr, foldrDefault, for_, indexl, indexr, intercalate, lookup, maximum, maximumBy, minimum, minimumBy, notElem, null, or, product, sequence_, sum, surround, surroundMap, traverse_) as Foldable
 import Data.Function (compose, const, flip, identity, on, (#), ($), (<<<), (>>>)) as Function
 import Data.List (List(..), (:)) as List
 import Control.Alternative (class Alt, class Alternative, class Applicative, class Apply, class Functor, class Plus, alt, apply, empty, guard, liftA1, map, pure, unless, void, when, ($>), (*>), (<#>), (<$), (<$>), (<*), (<*>), (<|>)) as Alternative

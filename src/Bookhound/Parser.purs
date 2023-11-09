@@ -139,9 +139,7 @@ anyOf :: forall f a. Foldable f => f (Parser a) -> Parser a
 anyOf = foldl alt empty
 
 allOf :: forall f a. Foldable f => f (Parser a) -> Parser a
-allOf xs
-  | hasNone xs = empty
-  | otherwise = foldl both (pure $ unsafeCoerce unit) xs
+allOf = foldl both (pure $ unsafeCoerce unit)
 
 both :: forall a. Parser a -> Parser a -> Parser a
 both
@@ -185,7 +183,8 @@ applyTransformsErrors
   -> Array (Set (Int /\ ParseError))
   -> Parser a
   -> Parser a
-applyTransformsErrors ts es = applyTransformError (findJust ts) (fold es)
+applyTransformsErrors ts es =
+  applyTransformError (findMap identity ts) (fold es)
 
 applyTransformError
   :: forall a

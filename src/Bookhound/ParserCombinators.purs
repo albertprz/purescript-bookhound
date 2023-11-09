@@ -60,20 +60,10 @@ instance IsMatch Char where
   isNot = isMatch (/=) anyChar
   inverse = except anyChar
 
-else instance IsMatch (Array Char) where
-  is = traverse is
-  isNot = traverse isNot
-  inverse = except ((|*) anyChar)
-
 else instance IsMatch String where
   is = charTraverse is
   isNot = charTraverse isNot
-  inverse = except ((||*) anyChar)
-
-else instance (UnsafeRead a, Show a) => IsMatch a where
-  is = map unsafeRead <<< is <<< show
-  isNot = map unsafeRead <<< isNot <<< show
-  inverse = map unsafeRead <<< inverse <<< map show
+  inverse = except $ (||*) anyChar
 
 isMatch :: forall a. (a -> a -> Boolean) -> Parser a -> a -> Parser a
 isMatch cond ma c1 = satisfy (cond c1) ma
@@ -108,7 +98,7 @@ multipleChar = map fromCharArray <<< multiple
 
 times :: forall a. Int -> Parser a -> Parser (Array a)
 times n p
-  | n < 1 = sequence $ p <$ []
+  | n < 1 = pure []
   | otherwise = sequence $ p <$ (1 .. n)
 
 -- Separated by combinators
@@ -131,7 +121,7 @@ sepByOp sep p = rmap Array.fromFoldable
 
 -- Within combinators
 withinBoth :: forall a b c. Parser a -> Parser b -> Parser c -> Parser c
-withinBoth = extract
+withinBoth start end p = start *> p <* end
 
 maybeWithinBoth :: forall a b c. Parser a -> Parser b -> Parser c -> Parser c
 maybeWithinBoth p p' = withinBoth (optional p) (optional p')

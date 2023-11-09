@@ -16,19 +16,19 @@ module Bookhound.ParserCombinators.List
 import Bookhound.FatPrelude
 
 import Bookhound.Parser (Parser, satisfy)
-import Bookhound.Utils.UnsafeRead (unsafeFromJust)
+import Bookhound.Utils.List (hasMultiple, hasSome) as List
 import Control.Apply (lift2)
-import Data.List as List
 
 -- Frequency combinators
 many :: forall a. Parser a -> Parser (List a)
-many p = (p >>= \x -> pure x <:> many p) <|> pure mempty
+many p = (p >>= \x -> pure x <:> many p)
+  <|> pure mempty
 
 some :: forall a. Parser a -> Parser (List a)
-some = satisfy hasSome <<< many
+some = satisfy List.hasSome <<< many
 
 multiple :: forall a. Parser a -> Parser (List a)
-multiple = satisfy hasMultiple <<< many
+multiple = satisfy List.hasMultiple <<< many
 
 -- Separated by combinators
 sepBy
@@ -54,13 +54,18 @@ multipleSepBy :: forall a b. Parser a -> Parser b -> Parser (List b)
 multipleSepBy = sepBy (map Just) some
 
 sepByOps :: forall a b. Parser a -> Parser b -> Parser (List a /\ List b)
-sepByOps sep p = do
+sepByOps sepP p = do
   x <- p
-  y <- (|+) (Tuple <$> sep <*> p)
-  pure $ map fst y /\ x : map snd y
+  ys <- (|+) (Tuple <$> sepP <*> p)
+  pure $ map fst ys /\ x : map snd ys
 
 sepByOp :: forall a b. Parser a -> Parser b -> Parser (a /\ List b)
-sepByOp sep p = lmap (unsafeFromJust <<< List.head) <$> sepByOps sep p
+sepByOp sepP p = do
+  x1 <- p
+  sep <- sepP
+  x2 <- p
+  xs <- (|*) (sepP *> p)
+  pure (sep /\ x1 : x2 : xs)
 
 applyCons :: forall f a. Apply f => f a -> f (List a) -> f (List a)
 applyCons = lift2 Cons

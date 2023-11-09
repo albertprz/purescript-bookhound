@@ -1,10 +1,10 @@
 module Bookhound.ParserSpec where
 
-import TestPrelude hiding (length)
+import TestPrelude
 
 import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, allOf, anyChar, anyOf, exactly, except, parse, runParser, satisfy, withErrorN, withTransform)
+import Bookhound.Utils.List as List
 import Control.Monad.Error.Class (throwError)
-import Data.Array (length)
 
 spec :: Spec Unit
 spec = describe "Bookhound.Parser" do
@@ -63,7 +63,7 @@ spec = describe "Bookhound.Parser" do
           === case unpack x of
             (ch : rest)
               | ch == y -> Result (pack rest) ch
-              | hasSome rest -> Error $ ExpectedEof $ pack rest
+              | List.hasSome rest -> Error $ ExpectedEof $ pack rest
             _ -> Error UnexpectedEof
 
     prop "works for /="
@@ -79,7 +79,7 @@ spec = describe "Bookhound.Parser" do
         === case unpack x of
           (ch : rest)
             | isLower ch -> Result (pack rest) ch
-            | hasSome rest -> Error $ ExpectedEof $ pack rest
+            | List.hasSome rest -> Error $ ExpectedEof $ pack rest
           _ -> Error UnexpectedEof
 
   describe "except"
@@ -100,12 +100,12 @@ spec = describe "Bookhound.Parser" do
               , "firstSuccess" <$ anyChar
               , "secondSuccess" <$ anyChar
               , throwError $ ErrorAt "secondError"
-              , throwError $ ErrorAt "lastError"
+              , throwError $ ErrorAt "thirdError"
               ]
           )
           x === case unpack x of
           (_ : rest) -> Result (pack rest) "firstSuccess"
-          Nil -> Error $ ErrorAt "lastError"
+          Nil -> Error $ ErrorAt "thirdError"
 
   describe "allOf" $ do
 
@@ -115,8 +115,8 @@ spec = describe "Bookhound.Parser" do
           parse
             ( allOf
                 [ "firstSuccess" <$ anyChar
-                , "secondSuccess" <$ anyChar
                 , throwError $ ErrorAt "firstError"
+                , "secondSuccess" <$ anyChar
                 ]
             )
             x === case unpack x of

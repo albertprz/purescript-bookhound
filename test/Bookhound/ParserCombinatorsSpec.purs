@@ -4,6 +4,7 @@ import TestPrelude
 
 import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, anyOf, anyChar, parse)
 import Bookhound.ParserCombinators (manySepBy, is, many, maybeWithin, maybeWithinBoth, multiple, multipleSepBy, some, someSepBy, times, within, withinBoth, (->>-), (|*), (|+), (|?))
+import Data.Array as Array
 import Data.String as String
 
 spec :: Spec Unit
@@ -69,7 +70,7 @@ spec = describe "Bookhound.ParserCombinators" $ do
         parse (manySepBy (is y) anyChar) x
           === parse
             ( append
-                <$> (map maybeToArray ((|?) anyChar))
+                <$> (map Array.fromFoldable ((|?) anyChar))
                 <*> ((|*) (is y *> anyChar))
             )
             x
@@ -86,11 +87,11 @@ spec = describe "Bookhound.ParserCombinators" $ do
         parse (multipleSepBy (is y) anyChar) x
           === parse (cons <$> anyChar <*> ((|+) (is y *> anyChar))) x
 
-  describe "->>-"
+  describe "parseAppend"
     $ prop "concats results of 2 parsers that can be converted to Strings"
     $ \x (y :: Char) (z :: Char) ->
         parse (is y ->>- is z) x
-          === parse (fromCharArray <$> is [ y, z ]) x
+          === parse (is $ fromCharArray [ y, z ]) x
 
 parseTimes :: forall a. Parser a -> Array Int -> String -> ParseResult (Array a)
 parseTimes p ns = parse $ anyOf (flip times p <$> reverse ns)
