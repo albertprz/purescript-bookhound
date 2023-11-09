@@ -3,8 +3,14 @@ module Bookhound.ParserSpec where
 import TestPrelude
 
 import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, allOf, anyChar, anyOf, exactly, except, parse, runParser, satisfy, withErrorN, withTransform)
+import Bookhound.Utils.Char (isLower, isUpper)
 import Bookhound.Utils.List as List
 import Control.Monad.Error.Class (throwError)
+import Data.Array (length)
+import Data.Either (Either(..))
+import Data.Foldable (sum)
+import Data.List (List(..), (:))
+import Data.Tuple.Nested ((/\))
 
 spec :: Spec Unit
 spec = describe "Bookhound.Parser" do

@@ -1,24 +1,26 @@
 module TestPrelude
-  ( module Bookhound.FatPrelude
+  ( module Prelude
   , module Test.QuickCheck
   , module Test.Spec
   , module Test.Spec.QuickCheck
   , module Control.Monad.Gen
   , module Data.Newtype
-  , prop
-  , pack
-  , unpack
   , PositiveInt(..)
   , NegativeInt(..)
   , SmallInt(..)
-
+  , prop
+  , pack
+  , unpack
   ) where
 
-import Bookhound.FatPrelude
+import Prelude
 
 import Control.Monad.Gen (class MonadGen, Size, chooseBool, chooseFloat, chooseInt, elements, filtered, frequency, oneOf, resize, sized, suchThat, unfoldable)
+import Data.Array (toUnfoldable)
+import Data.List (List)
 import Data.List (toUnfoldable) as List
 import Data.Newtype (class Newtype, ala, alaF, collect, modify, over, overF, overF2, un, under, under2, underF, underF2, unwrap, wrap)
+import Data.String.CodeUnits (fromCharArray, toCharArray)
 import Test.QuickCheck (class Arbitrary, class Testable, (===))
 import Test.Spec (Spec, SpecT(..), after, afterAll, afterAll_, after_, around, aroundWith, around_, before, beforeAll, beforeAll_, beforeWith, before_, describe, describeOnly, evaluateExample, focus, hoistSpec, it, itOnly, mapSpecTree, parallel, pending, pending', sequential)
 import Test.Spec.QuickCheck (quickCheck, quickCheck', quickCheckPure)

@@ -1,10 +1,11 @@
 module Bookhound.Parsers.Char where
 
-import Bookhound.FatPrelude
+import Prelude
 
 import Bookhound.Parser (Parser, satisfy)
 import Bookhound.Parser as Parser
 import Bookhound.ParserCombinators (is)
+import Bookhound.Utils.Char (isAlpha, isAlphaNum, isDigit, isHexDigit, isLower, isUpper)
 import Control.Alt ((<|>))
 
 anyChar :: Parser Char

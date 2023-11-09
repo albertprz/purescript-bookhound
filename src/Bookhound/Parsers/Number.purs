@@ -1,12 +1,13 @@
 module Bookhound.Parsers.Number (int, double, posInt, negInt, unsignedInt, hexInt) where
 
-import Bookhound.FatPrelude
+import Prelude
 
 import Bookhound.Parser (Parser, withErrorN)
 import Bookhound.ParserCombinators (is, oneOf, (->>-), (|+), (|?), (||+))
 import Bookhound.Parsers.Char (dash, digit, dot, hexDigit, plus)
 import Control.Alt ((<|>))
 import Data.Int as Int
+import Data.Maybe (fromJust)
 import Data.Number as Number
 import Partial.Unsafe (unsafePartial)
 
@@ -32,7 +33,7 @@ int = withErrorN (-1) "Int" $ negInt <|> posInt
 double :: Parser Number
 double = withErrorN (-1) "Double" $ unsafeReadNumber
   <$> int
-  ->>- (decimals ->>- (|?) expn <|> expn)
+    ->>- (decimals ->>- (|?) expn <|> expn)
   where
   decimals = dot ->>- unsignedInt
   expn = oneOf [ 'e', 'E' ] ->>- int

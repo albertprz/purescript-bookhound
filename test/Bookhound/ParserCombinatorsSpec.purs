@@ -4,8 +4,12 @@ import TestPrelude
 
 import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, anyOf, anyChar, parse)
 import Bookhound.ParserCombinators (manySepBy, is, many, maybeWithin, maybeWithinBoth, multiple, multipleSepBy, some, someSepBy, times, within, withinBoth, (->>-), (|*), (|+), (|?))
+import Bookhound.Utils.Array ((..))
+import Data.Array (cons, head, reverse)
 import Data.Array as Array
+import Data.Maybe (optional)
 import Data.String as String
+import Data.String.CodeUnits (fromCharArray, toCharArray)
 
 spec :: Spec Unit
 spec = describe "Bookhound.ParserCombinators" $ do

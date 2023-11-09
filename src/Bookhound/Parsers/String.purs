@@ -1,10 +1,11 @@
 module Bookhound.Parsers.String where
 
-import Bookhound.FatPrelude
+import Prelude
 
 import Bookhound.Parser (Parser)
 import Bookhound.ParserCombinators (inverse, maybeWithin, maybeWithinBoth, within, withinBoth, (->>-), (|+), (|?), (||*), (||+))
 import Bookhound.Parsers.Char (alpha, alphaNum, anyChar, closeAngle, closeCurly, closeParens, closeSquare, digit, doubleQuote, lower, newLine, openAngle, openCurly, openParens, openSquare, quote, space, spaceOrTab, tab, upper, whiteSpace)
+import Data.Foldable (fold)
 
 anyString :: Parser String
 anyString = (||*) anyChar

@@ -19,19 +19,25 @@ module Bookhound.Parser
   , withErrorN
   ) where
 
-import Bookhound.FatPrelude
+import Prelude
 
-import Control.Alt (class Alt)
+import Control.Alt (class Alt, alt)
 import Control.Alternative (class Alternative, class Plus, empty)
 import Control.Apply (lift2)
 import Control.Lazy (class Lazy)
 import Control.Monad.Error.Class (class MonadThrow)
 import Control.MonadPlus (class MonadPlus)
-import Data.Foldable (class Foldable)
+import Data.Array (filter, reverse)
+import Data.Either (Either(..), fromRight)
+import Data.Foldable (class Foldable, findMap, fold, foldl)
 import Data.Lazy as Lazy
+import Data.Maybe (Maybe(..), maybe)
+import Data.Set (Set)
 import Data.Set as Set
 import Data.String (null) as String
 import Data.String.CodeUnits (uncons) as String
+import Data.Tuple (snd)
+import Data.Tuple.Nested (type (/\), (/\))
 import Unsafe.Coerce (unsafeCoerce)
 
 newtype Parser a = P
@@ -105,7 +111,7 @@ instance Lazy (Parser a) where
 anyChar :: Parser Char
 anyChar = mkParser
   $ maybe (Error UnexpectedEof) (\x -> Result x.tail x.head)
-  <<< String.uncons
+      <<< String.uncons
 
 parse :: forall a. Parser a -> Input -> ParseResult a
 parse (P x) = x.parse

@@ -9,6 +9,7 @@ in      conf
               , "spec-quickcheck"
               , "aff"
               , "quickcheck"
+              , "newtype"
               , "gen"
               , "effect"
               ]

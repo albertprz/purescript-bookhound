@@ -41,14 +41,22 @@ module Bookhound.ParserCombinators
   , (||++)
   ) where
 
-import Bookhound.FatPrelude
+import Prelude
 
 import Bookhound.Parser (Parser, allOf, anyOf, both, anyChar, except, satisfy, withError)
 import Bookhound.ParserCombinators.List as List
-import Bookhound.Utils.String (charTraverse)
+import Bookhound.Utils.Array ((..))
+import Bookhound.Utils.String (class ToString, charTraverse, toString)
 import Control.Apply (lift2)
+import Data.Array (cons)
 import Data.Array as Array
+import Data.Bifunctor (bimap, rmap)
+import Data.Maybe (maybe, optional)
+import Data.String.CodeUnits (fromCharArray)
 import Data.String.CodeUnits as String
+import Data.Traversable (sequence)
+import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested (type (/\))
 
 class IsMatch a where
   is :: a -> Parser a

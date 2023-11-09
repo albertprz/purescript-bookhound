@@ -4,6 +4,7 @@ import TestPrelude
 
 import Bookhound.Parser (runParser)
 import Bookhound.Parsers.Number (int, negInt, posInt)
+import Data.Either (Either(..))
 
 spec :: Spec Unit
 spec = describe "Bookhound.Parsers.Number" $ do

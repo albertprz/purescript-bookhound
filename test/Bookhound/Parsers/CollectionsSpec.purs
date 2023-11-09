@@ -4,12 +4,16 @@ import TestPrelude
 
 import Bookhound.Parser (runParser)
 import Bookhound.ParserCombinators (is)
-import Bookhound.Parsers.Collections (listOf, mapOf)
 import Bookhound.Parsers.Char (alpha)
-
-import Data.String.CodeUnits as String
-
+import Bookhound.Parsers.Collections (listOf, mapOf)
+import Bookhound.Utils.Char (isAlpha)
+import Data.Array (filter)
+import Data.Either (Either(..))
+import Data.Foldable (intercalate)
 import Data.Map as Map
+import Data.String.CodeUnits (fromCharArray)
+import Data.String.CodeUnits as String
+import Data.Tuple.Nested (type (/\), (/\))
 
 spec :: Spec Unit
 spec = describe "Bookhound.Parsers.Collections" $ do

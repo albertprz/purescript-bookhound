@@ -13,11 +13,16 @@ module Bookhound.ParserCombinators.List
   , (|++)
   ) where
 
-import Bookhound.FatPrelude
+import Prelude
 
 import Bookhound.Parser (Parser, satisfy)
 import Bookhound.Utils.List (hasMultiple, hasSome) as List
+import Control.Alt ((<|>))
 import Control.Apply (lift2)
+import Data.List (List(..), (:))
+import Data.Maybe (Maybe(..), optional)
+import Data.Tuple (Tuple(..), fst, snd)
+import Data.Tuple.Nested (type (/\), (/\))
 
 -- Frequency combinators
 many :: forall a. Parser a -> Parser (List a)
