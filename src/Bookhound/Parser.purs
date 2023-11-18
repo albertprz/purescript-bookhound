@@ -8,7 +8,11 @@ module Bookhound.Parser
   , runParser
   , andThen
   , exactly
+  , eof
+  , lookAhead
+  , notFollowedBy
   , both
+  , choice
   , anyOf
   , allOf
   , anyChar
@@ -134,12 +138,33 @@ andThen p1 (p2@(P { transform: (t :: Transform), errors: e })) =
     mkParser (\i -> parse p2 $ fromRight i $ runParser p1 i)
 
 exactly :: forall a. Parser a -> Parser a
-exactly (P { parse: p, transform: (t :: Transform), errors: e }) =
-  applyTransformError t e $ mkParser
-    \x -> case p x of
-      result@(Result i _) | i == mempty -> result
-      Result i _ -> Error $ ExpectedEof i
-      err -> err
+exactly p = p <* eof
+
+eof :: Parser Unit
+eof = mkParser
+    \i -> if i == mempty then
+            Result i unit
+          else
+        Error $ ExpectedEof i
+
+lookAhead :: forall a. Parser a -> Parser a
+lookAhead (P { parse: p, transform: (t :: Transform), errors: e }) =
+  applyTransformError t e $
+    mkParser
+      \x -> case p x of
+        Result _ a -> Result x a
+        err -> err
+
+notFollowedBy :: forall a. Parser a -> Parser Unit
+notFollowedBy (P { parse: p, transform: (t :: Transform), errors: e }) =
+  applyTransformError t e $
+    mkParser
+      \x -> case p x of
+        Result _ _ -> Error UnexpectedEof
+        _ -> Result x unit
+
+choice :: forall f a. Foldable f => f (Parser a) -> Parser a
+choice = anyOf
 
 anyOf :: forall f a. Foldable f => f (Parser a) -> Parser a
 anyOf = foldl alt empty

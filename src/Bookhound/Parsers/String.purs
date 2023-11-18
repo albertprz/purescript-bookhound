@@ -1,9 +1,9 @@
-module Bookhound.Parsers.String where
+module Bookhound.Parsers.String (anyString, word, digits, uppers, lowers, alphas, alphaNums, spaces, tabs, newLines, spacesOrTabs, spacing, blankLine, blankLines, betweenQuotes, betweenDoubleQuotes, betweenParens, betweenSquare, betweenCurly, betweenAngle, maybeBetweenQuotes, maybeBetweenDoubleQuotes, maybeBetweenParens, maybeBetweenSquare, maybeBetweenCurly, maybeBetweenAngle) where
 
-import Prelude
+import Prelude hiding (between)
 
 import Bookhound.Parser (Parser)
-import Bookhound.ParserCombinators (inverse, maybeWithin, maybeWithinBoth, within, withinBoth, (->>-), (|+), (|?), (||*), (||+))
+import Bookhound.ParserCombinators (inverse, maybeBetween, maybeSurroundedBy, between, surroundedBy, (->>-), (|+), (|?), (||*), (||+))
 import Bookhound.Parsers.Char (alpha, alphaNum, anyChar, closeAngle, closeCurly, closeParens, closeSquare, digit, doubleQuote, lower, newLine, openAngle, openCurly, openParens, openSquare, quote, space, spaceOrTab, tab, upper, whiteSpace)
 import Data.Foldable (fold)
 
@@ -49,38 +49,38 @@ blankLine = (|?) spacesOrTabs ->>- newLine
 blankLines :: Parser String
 blankLines = fold <$> (|+) blankLine
 
-withinQuotes :: forall b. Parser b -> Parser b
-withinQuotes = within quote
+betweenQuotes :: forall b. Parser b -> Parser b
+betweenQuotes = between quote
 
-withinDoubleQuotes :: forall b. Parser b -> Parser b
-withinDoubleQuotes = within doubleQuote
+betweenDoubleQuotes :: forall b. Parser b -> Parser b
+betweenDoubleQuotes = between doubleQuote
 
-withinParens :: forall b. Parser b -> Parser b
-withinParens = withinBoth openParens closeParens
+betweenParens :: forall b. Parser b -> Parser b
+betweenParens = surroundedBy openParens closeParens
 
-withinSquareBrackets :: forall b. Parser b -> Parser b
-withinSquareBrackets = withinBoth openSquare closeSquare
+betweenSquare :: forall b. Parser b -> Parser b
+betweenSquare = surroundedBy openSquare closeSquare
 
-withinCurlyBrackets :: forall b. Parser b -> Parser b
-withinCurlyBrackets = withinBoth openCurly closeCurly
+betweenCurly :: forall b. Parser b -> Parser b
+betweenCurly = surroundedBy openCurly closeCurly
 
-withinAngleBrackets :: forall b. Parser b -> Parser b
-withinAngleBrackets = withinBoth openAngle closeAngle
+betweenAngle :: forall b. Parser b -> Parser b
+betweenAngle = surroundedBy openAngle closeAngle
 
-maybeWithinQuotes :: forall b. Parser b -> Parser b
-maybeWithinQuotes = maybeWithin quote
+maybeBetweenQuotes :: forall b. Parser b -> Parser b
+maybeBetweenQuotes = maybeBetween quote
 
-maybeWithinDoubleQuotes :: forall b. Parser b -> Parser b
-maybeWithinDoubleQuotes = maybeWithin doubleQuote
+maybeBetweenDoubleQuotes :: forall b. Parser b -> Parser b
+maybeBetweenDoubleQuotes = maybeBetween doubleQuote
 
-maybeWithinParens :: forall b. Parser b -> Parser b
-maybeWithinParens = maybeWithinBoth openParens closeParens
+maybeBetweenParens :: forall b. Parser b -> Parser b
+maybeBetweenParens = maybeSurroundedBy openParens closeParens
 
-maybeWithinSquareBrackets :: forall b. Parser b -> Parser b
-maybeWithinSquareBrackets = maybeWithinBoth openSquare closeSquare
+maybeBetweenSquare :: forall b. Parser b -> Parser b
+maybeBetweenSquare = maybeSurroundedBy openSquare closeSquare
 
-maybeWithinCurlyBrackets :: forall b. Parser b -> Parser b
-maybeWithinCurlyBrackets = maybeWithinBoth openCurly closeCurly
+maybeBetweenCurly :: forall b. Parser b -> Parser b
+maybeBetweenCurly = maybeSurroundedBy openCurly closeCurly
 
-maybeWithinAngleBrackets :: forall b. Parser b -> Parser b
-maybeWithinAngleBrackets = maybeWithinBoth openAngle closeAngle
+maybeBetweenAngle :: forall b. Parser b -> Parser b
+maybeBetweenAngle = maybeSurroundedBy openAngle closeAngle

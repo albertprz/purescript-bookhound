@@ -1,36 +1,34 @@
-module Bookhound.Parsers.Char where
+module Bookhound.Parsers.Char (module AnyChar, digit, hexDigit, upper, lower, alpha, alphaNum, space, tab, newLine, spaceOrTab, whiteSpace, comma, dot, colon, quote, doubleQuote, dash, plus, equal, underscore, hashTag, question, openParens, closeParens, openSquare, closeSquare, openCurly, closeCurly, openAngle, closeAngle) where
 
 import Prelude
 
-import Bookhound.Parser (Parser, satisfy)
+import Bookhound.Parser (Parser, anyChar)
 import Bookhound.Parser as Parser
+import Bookhound.Parser (anyChar) as AnyChar
 import Bookhound.ParserCombinators (is)
 import Bookhound.Utils.Char (isAlpha, isAlphaNum, isDigit, isHexDigit, isLower, isUpper)
 import Control.Alt ((<|>))
 
-anyChar :: Parser Char
-anyChar = Parser.anyChar
-
-satisfyChar :: (Char -> Boolean) -> Parser Char
-satisfyChar = flip satisfy anyChar
+satisfy :: (Char -> Boolean) -> Parser Char
+satisfy = flip Parser.satisfy anyChar
 
 digit :: Parser Char
-digit = satisfyChar isDigit
+digit = satisfy isDigit
 
 hexDigit :: Parser Char
-hexDigit = satisfyChar isHexDigit
+hexDigit = satisfy isHexDigit
 
 upper :: Parser Char
-upper = satisfyChar isUpper
+upper = satisfy isUpper
 
 lower :: Parser Char
-lower = satisfyChar isLower
+lower = satisfy isLower
 
 alpha :: Parser Char
-alpha = satisfyChar isAlpha
+alpha = satisfy isAlpha
 
 alphaNum :: Parser Char
-alphaNum = satisfyChar isAlphaNum
+alphaNum = satisfy isAlphaNum
 
 space :: Parser Char
 space = is ' '

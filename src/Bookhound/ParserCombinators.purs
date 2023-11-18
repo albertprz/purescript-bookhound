@@ -3,6 +3,8 @@ module Bookhound.ParserCombinators
   , is
   , isNot
   , inverse
+  , char
+  , string
   , oneOf
   , noneOf
   , times
@@ -12,17 +14,20 @@ module Bookhound.ParserCombinators
   , manyChar
   , someChar
   , multipleChar
-  , within
+  , between
   , applyCons
   , applyTuple
-  , maybeWithin
-  , withinBoth
-  , maybeWithinBoth
+  , maybeBetween
+  , surroundedBy
+  , maybeSurroundedBy
   , manySepBy
   , someSepBy
   , multipleSepBy
   , sepByOp
   , sepByOps
+  , manyEndBy
+  , someEndBy
+  , multipleEndBy
   , parseAppend
   , withErrorFlipped
   , timesFlipped
@@ -41,7 +46,7 @@ module Bookhound.ParserCombinators
   , (||++)
   ) where
 
-import Prelude
+import Prelude hiding (between)
 
 import Bookhound.Parser (Parser, allOf, anyOf, both, anyChar, except, satisfy, withError)
 import Bookhound.ParserCombinators.List as List
@@ -76,6 +81,12 @@ else instance IsMatch String where
 isMatch :: forall a. (a -> a -> Boolean) -> Parser a -> a -> Parser a
 isMatch cond ma c1 = satisfy (cond c1) ma
 
+char :: Char -> Parser Char
+char = is
+
+string :: String -> Parser String
+string = is
+
 oneOf :: forall a. IsMatch a => Array a -> Parser a
 oneOf = anyOf <<< map is
 
@@ -109,7 +120,7 @@ times n p
   | n < 1 = pure []
   | otherwise = sequence $ p <$ (1 .. n)
 
--- Separated by combinators
+-- Sep by combinators
 manySepBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
 manySepBy sep p = Array.fromFoldable <$> List.manySepBy sep p
 
@@ -119,6 +130,7 @@ someSepBy sep p = Array.fromFoldable <$> List.someSepBy sep p
 multipleSepBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
 multipleSepBy sep p = Array.fromFoldable <$> List.multipleSepBy sep p
 
+-- Sep by ops combinators
 sepByOps :: forall a b. Parser a -> Parser b -> Parser (Array a /\ Array b)
 sepByOps sep p = bimap Array.fromFoldable Array.fromFoldable
   <$> List.sepByOps sep p
@@ -127,18 +139,29 @@ sepByOp :: forall a b. Parser a -> Parser b -> Parser (a /\ Array b)
 sepByOp sep p = rmap Array.fromFoldable
   <$> List.sepByOp sep p
 
--- Within combinators
-withinBoth :: forall a b c. Parser a -> Parser b -> Parser c -> Parser c
-withinBoth start end p = start *> p <* end
+-- End by combinators
+manyEndBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
+manyEndBy end p = Array.fromFoldable <$> List.manyEndBy end p
 
-maybeWithinBoth :: forall a b c. Parser a -> Parser b -> Parser c -> Parser c
-maybeWithinBoth p p' = withinBoth (optional p) (optional p')
+someEndBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
+someEndBy end p = Array.fromFoldable <$> List.someEndBy end p
 
-within :: forall a b. Parser a -> Parser b -> Parser b
-within p = withinBoth p p
+multipleEndBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
+multipleEndBy end p = Array.fromFoldable <$> List.multipleEndBy end p
 
-maybeWithin :: forall a b. Parser a -> Parser b -> Parser b
-maybeWithin = within <<< optional
+
+-- Between combinators
+surroundedBy :: forall a b c. Parser a -> Parser b -> Parser c -> Parser c
+surroundedBy start end p = start *> p <* end
+
+maybeSurroundedBy :: forall a b c. Parser a -> Parser b -> Parser c -> Parser c
+maybeSurroundedBy p p' = surroundedBy (optional p) (optional p')
+
+between :: forall a b. Parser a -> Parser b -> Parser b
+between p = surroundedBy p p
+
+maybeBetween :: forall a b. Parser a -> Parser b -> Parser b
+maybeBetween = between <<< optional
 
 parseAppend
   :: forall a b

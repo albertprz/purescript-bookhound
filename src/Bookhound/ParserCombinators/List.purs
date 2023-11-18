@@ -5,6 +5,9 @@ module Bookhound.ParserCombinators.List
   , manySepBy
   , someSepBy
   , multipleSepBy
+  , manyEndBy
+  , someEndBy
+  , multipleEndBy
   , sepByOp
   , sepByOps
   , (|?)
@@ -35,7 +38,7 @@ some = satisfy List.hasSome <<< many
 multiple :: forall a. Parser a -> Parser (List a)
 multiple = satisfy List.hasMultiple <<< many
 
--- Separated by combinators
+-- Sep by combinators
 sepBy
   :: forall a b
    . (Parser b -> Parser (Maybe b))
@@ -58,6 +61,7 @@ someSepBy = sepBy (map Just) many
 multipleSepBy :: forall a b. Parser a -> Parser b -> Parser (List b)
 multipleSepBy = sepBy (map Just) some
 
+-- Sep by ops combinators
 sepByOps :: forall a b. Parser a -> Parser b -> Parser (List a /\ List b)
 sepByOps sepP p = do
   x <- p
@@ -71,6 +75,27 @@ sepByOp sepP p = do
   x2 <- p
   xs <- (|*) (sepP *> p)
   pure (sep /\ x1 : x2 : xs)
+
+-- End by combinators
+endBy
+  :: forall a b
+   . (Parser b -> Parser (Maybe b))
+  -> (Parser b -> Parser (List b))
+  -> Parser a
+  -> Parser b
+  -> Parser (List b)
+endBy freq1 freq2 sep p =
+  sepBy freq1 freq2 sep p <* sep
+
+manyEndBy :: forall a b. Parser a -> Parser b -> Parser (List b)
+manyEndBy = endBy optional many
+
+someEndBy :: forall a b. Parser a -> Parser b -> Parser (List b)
+someEndBy = endBy (map Just) many
+
+multipleEndBy :: forall a b. Parser a -> Parser b -> Parser (List b)
+multipleEndBy = endBy (map Just) some
+
 
 applyCons :: forall f a. Apply f => f a -> f (List a) -> f (List a)
 applyCons = lift2 Cons

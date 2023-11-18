@@ -13,7 +13,7 @@ module TestPrelude
   , unpack
   ) where
 
-import Prelude
+import Prelude hiding (between)
 
 import Control.Monad.Gen (class MonadGen, Size, chooseBool, chooseFloat, chooseInt, elements, filtered, frequency, oneOf, resize, sized, suchThat, unfoldable)
 import Data.Array (toUnfoldable)

@@ -3,7 +3,7 @@ module Bookhound.ParserCombinatorsSpec where
 import TestPrelude
 
 import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, anyOf, anyChar, parse)
-import Bookhound.ParserCombinators (manySepBy, is, many, maybeWithin, maybeWithinBoth, multiple, multipleSepBy, some, someSepBy, times, within, withinBoth, (->>-), (|*), (|+), (|?))
+import Bookhound.ParserCombinators (manySepBy, is, many, maybeBetween, maybeSurroundedBy, multiple, multipleSepBy, some, someSepBy, times, between, surroundedBy, (->>-), (|*), (|+), (|?))
 import Bookhound.Utils.Array ((..))
 import Data.Array (cons, head, reverse)
 import Data.Array as Array
@@ -44,28 +44,28 @@ spec = describe "Bookhound.ParserCombinators" $ do
     $ \x -> parse (multiple anyChar) x
         === parseTimes anyChar (2 .. max 2 (String.length x + 10)) x
 
-  describe "withinBoth"
+  describe "surroundedBy"
     $ prop "applies a parser surrounded by 2 parsers"
     $ \x (y :: Char) (z :: Char) ->
-        parse (withinBoth (is y) (is z) anyChar) x
+        parse (surroundedBy (is y) (is z) anyChar) x
           === parse (is y *> anyChar <* is z) x
 
-  describe "maybeWithinBoth"
+  describe "maybeSurroundedBy"
     $ prop "applies a parser surrounded by 2 optional parsers"
     $ \x (y :: Char) (z :: Char) ->
-        parse (maybeWithinBoth (is y) (is z) anyChar) x
+        parse (maybeSurroundedBy (is y) (is z) anyChar) x
           === parse (((|?) $ is y) *> anyChar <* ((|?) $ is z)) x
 
-  describe "within"
+  describe "between"
     $ prop "applies a parser surrounded by a parser"
     $ \x (y :: Char) ->
-        parse (within (is y) anyChar) x
+        parse (between (is y) anyChar) x
           === parse (is y *> anyChar <* is y) x
 
-  describe "maybeWithin"
+  describe "maybeBetween"
     $ prop "applies a parser surrounded by a optional parsers"
     $ \x (y :: Char) ->
-        parse (maybeWithin (is y) anyChar) x
+        parse (maybeBetween (is y) anyChar) x
           === parse (((|?) $ is y) *> anyChar <* ((|?) $ is y)) x
 
   describe "manySepBy"
