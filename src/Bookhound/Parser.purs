@@ -29,7 +29,7 @@ import Control.Alt (class Alt, alt)
 import Control.Alternative (class Alternative, class Plus, empty)
 import Control.Apply (lift2)
 import Control.Lazy (class Lazy)
-import Control.Monad.Error.Class (class MonadThrow)
+import Control.Monad.Error.Class (class MonadError, class MonadThrow)
 import Control.MonadPlus (class MonadPlus)
 import Data.Array (filter, reverse)
 import Data.Either (Either(..), fromRight)
@@ -107,6 +107,12 @@ instance MonadPlus Parser
 instance MonadThrow ParseError Parser where
   throwError = mkParser <<< const <<< Error
 
+instance MonadError ParseError Parser where
+  catchError p errFn = mkParser
+    \x -> case parse p x of
+      Error err -> parse (errFn err) x
+      result -> result
+
 instance Lazy (Parser a) where
   defer f = mkParser \x -> parse (Lazy.force lazy) x
     where
@@ -142,10 +148,11 @@ exactly p = p <* eof
 
 eof :: Parser Unit
 eof = mkParser
-    \i -> if i == mempty then
-            Result i unit
-          else
-        Error $ ExpectedEof i
+  \i ->
+    if i == mempty then
+      Result i unit
+    else
+      Error $ ExpectedEof i
 
 lookAhead :: forall a. Parser a -> Parser a
 lookAhead (P { parse: p, transform: (t :: Transform), errors: e }) =
