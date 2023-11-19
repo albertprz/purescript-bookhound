@@ -9,9 +9,6 @@ import Bookhound.ParserCombinators (is)
 import Bookhound.Utils.Char (isAlpha, isAlphaNum, isDigit, isHexDigit, isLower, isUpper)
 import Control.Alt ((<|>))
 
-satisfy :: (Char -> Boolean) -> Parser Char
-satisfy = flip Parser.satisfy anyChar
-
 digit :: Parser Char
 digit = satisfy isDigit
 
@@ -101,3 +98,6 @@ openAngle = is '<'
 
 closeAngle :: Parser Char
 closeAngle = is '>'
+
+satisfy :: (Char -> Boolean) -> Parser Char
+satisfy = flip Parser.satisfy anyChar

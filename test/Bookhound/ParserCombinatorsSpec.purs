@@ -3,7 +3,7 @@ module Bookhound.ParserCombinatorsSpec where
 import TestPrelude
 
 import Bookhound.Parser (ParseError(..), ParseResult(..), Parser, anyOf, anyChar, parse)
-import Bookhound.ParserCombinators (manySepBy, is, many, maybeBetween, maybeSurroundedBy, multiple, multipleSepBy, some, someSepBy, times, between, surroundedBy, (->>-), (|*), (|+), (|?))
+import Bookhound.ParserCombinators (between, is, many, manySepBy, maybeBetween, maybeSurroundedBy, multiple, multipleSepBy, some, someSepBy, surroundedBy, times, (->>-), (|*), (|+), (|?))
 import Bookhound.Utils.Array ((..))
 import Data.Array (cons, head, reverse)
 import Data.Array as Array
@@ -44,28 +44,28 @@ spec = describe "Bookhound.ParserCombinators" $ do
     $ \x -> parse (multiple anyChar) x
         === parseTimes anyChar (2 .. max 2 (String.length x + 10)) x
 
-  describe "surroundedBy"
+  describe "between"
     $ prop "applies a parser surrounded by 2 parsers"
     $ \x (y :: Char) (z :: Char) ->
-        parse (surroundedBy (is y) (is z) anyChar) x
+        parse (between (is y) (is z) anyChar) x
           === parse (is y *> anyChar <* is z) x
 
-  describe "maybeSurroundedBy"
+  describe "maybeBetween"
     $ prop "applies a parser surrounded by 2 optional parsers"
     $ \x (y :: Char) (z :: Char) ->
-        parse (maybeSurroundedBy (is y) (is z) anyChar) x
+        parse (maybeBetween (is y) (is z) anyChar) x
           === parse (((|?) $ is y) *> anyChar <* ((|?) $ is z)) x
 
-  describe "between"
+  describe "surroundedBy"
     $ prop "applies a parser surrounded by a parser"
     $ \x (y :: Char) ->
-        parse (between (is y) anyChar) x
+        parse (surroundedBy (is y) anyChar) x
           === parse (is y *> anyChar <* is y) x
 
-  describe "maybeBetween"
+  describe "maybeSurroundedBy"
     $ prop "applies a parser surrounded by a optional parsers"
     $ \x (y :: Char) ->
-        parse (maybeBetween (is y) anyChar) x
+        parse (maybeSurroundedBy (is y) anyChar) x
           === parse (((|?) $ is y) *> anyChar <* ((|?) $ is y)) x
 
   describe "manySepBy"

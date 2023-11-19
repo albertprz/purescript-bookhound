@@ -14,9 +14,9 @@ module Bookhound.ParserCombinators
   , manyChar
   , someChar
   , multipleChar
-  , between
   , applyCons
   , applyTuple
+  , between
   , maybeBetween
   , surroundedBy
   , maybeSurroundedBy
@@ -149,19 +149,18 @@ someEndBy end p = Array.fromFoldable <$> List.someEndBy end p
 multipleEndBy :: forall a b. Parser a -> Parser b -> Parser (Array b)
 multipleEndBy end p = Array.fromFoldable <$> List.multipleEndBy end p
 
-
 -- Between combinators
-surroundedBy :: forall a b c. Parser a -> Parser b -> Parser c -> Parser c
-surroundedBy start end p = start *> p <* end
+between :: forall a b c. Parser a -> Parser b -> Parser c -> Parser c
+between start end p = start *> p <* end
 
-maybeSurroundedBy :: forall a b c. Parser a -> Parser b -> Parser c -> Parser c
-maybeSurroundedBy p p' = surroundedBy (optional p) (optional p')
+maybeBetween :: forall a b c. Parser a -> Parser b -> Parser c -> Parser c
+maybeBetween p p' = between (optional p) (optional p')
 
-between :: forall a b. Parser a -> Parser b -> Parser b
-between p = surroundedBy p p
+surroundedBy :: forall a b. Parser a -> Parser b -> Parser b
+surroundedBy p = between p p
 
-maybeBetween :: forall a b. Parser a -> Parser b -> Parser b
-maybeBetween = between <<< optional
+maybeSurroundedBy :: forall a b. Parser a -> Parser b -> Parser b
+maybeSurroundedBy = surroundedBy <<< optional
 
 parseAppend
   :: forall a b
